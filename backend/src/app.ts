@@ -5,5 +5,5 @@ export const app = Fastify({
 });
 
 app.get("/", async () => {
-  return { message: "API rodando ", status: "ok" };
+  return { message: "API rodando", status: "ok" };
 });
