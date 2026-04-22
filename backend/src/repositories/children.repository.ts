@@ -266,32 +266,104 @@ export class ChildrenRepository {
     id: string,
     reviewedBy: string
   ): Promise<ChildRecord | null> {
-    const result = await pool.query<ChildRow>(
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const checkResult = await client.query(
+        "SELECT id FROM children WHERE id = $1",
+        [id]
+      );
+
+      if (checkResult.rows.length === 0) {
+        await client.query("ROLLBACK");
+        return null;
+      }
+
+      const updateResult = await client.query<ChildRow>(
+        `
+          UPDATE children
+          SET
+            revisado = true,
+            revisado_por = $2,
+            revisado_em = now(),
+            updated_at = now()
+          WHERE id = $1
+          RETURNING
+            id,
+            nome,
+            data_nascimento::text AS data_nascimento,
+            bairro,
+            responsavel,
+            saude,
+            educacao,
+            assistencia_social,
+            revisado,
+            revisado_por,
+            revisado_em::text AS revisado_em
+        `,
+        [id, reviewedBy]
+      );
+
+      await client.query(
+        `
+          INSERT INTO child_reviews (child_id, technician_email)
+          VALUES ($1, $2)
+        `,
+        [id, reviewedBy]
+      );
+
+      await client.query("COMMIT");
+
+      return updateResult.rows[0] ? mapRow(updateResult.rows[0]) : null;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getSummary(): Promise<{
+    total_criancas: number;
+    total_revisadas: number;
+    alertas_saude: number;
+    alertas_educacao: number;
+    alertas_assistencia: number;
+    alertas_totais: number;
+  }> {
+    const result = await pool.query<{
+      total_criancas: string;
+      total_revisadas: string;
+      alertas_saude: string;
+      alertas_educacao: string;
+      alertas_assistencia: string;
+    }>(
       `
-        UPDATE children
-        SET
-          revisado = true,
-          revisado_por = $2,
-          revisado_em = now(),
-          updated_at = now()
-        WHERE id = $1
-        RETURNING
-          id,
-          nome,
-          data_nascimento::text AS data_nascimento,
-          bairro,
-          responsavel,
-          saude,
-          educacao,
-          assistencia_social,
-          revisado,
-          revisado_por,
-          revisado_em::text AS revisado_em
-      `,
-      [id, reviewedBy]
+        SELECT
+          COUNT(*)::text AS total_criancas,
+          SUM(CASE WHEN revisado THEN 1 ELSE 0 END)::text AS total_revisadas,
+          COUNT(CASE WHEN saude IS NOT NULL AND (saude ->> 'alertas')::jsonb != '[]' THEN 1 END)::text AS alertas_saude,
+          COUNT(CASE WHEN educacao IS NOT NULL AND (educacao ->> 'alertas')::jsonb != '[]' THEN 1 END)::text AS alertas_educacao,
+          COUNT(CASE WHEN assistencia_social IS NOT NULL AND (assistencia_social ->> 'alertas')::jsonb != '[]' THEN 1 END)::text AS alertas_assistencia
+        FROM children
+      `
     );
 
-    return result.rows[0] ? mapRow(result.rows[0]) : null;
+    const row = result.rows[0];
+    const alertas_saude = Number(row?.alertas_saude ?? 0);
+    const alertas_educacao = Number(row?.alertas_educacao ?? 0);
+    const alertas_assistencia = Number(row?.alertas_assistencia ?? 0);
+
+    return {
+      total_criancas: Number(row?.total_criancas ?? 0),
+      total_revisadas: Number(row?.total_revisadas ?? 0),
+      alertas_saude,
+      alertas_educacao,
+      alertas_assistencia,
+      alertas_totais: alertas_saude + alertas_educacao + alertas_assistencia
+    };
   }
 }
 

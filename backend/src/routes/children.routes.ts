@@ -40,6 +40,11 @@ const querySchema = z.object({
 });
 
 export async function childrenRoutes(app: FastifyInstance) {
+  app.get("/summary", async (request, reply) => {
+    const summary = await childrenRepository.getSummary();
+    return reply.send(summary);
+  });
+
   app.get("/children", async (request, reply) => {
     const queryResult = querySchema.safeParse(request.query);
 

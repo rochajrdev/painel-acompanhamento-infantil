@@ -29,4 +29,17 @@ export const techniciansTableSql = `
   );
 `;
 
-export const databaseSchemaSql = `${childrenTableSql}\n${techniciansTableSql}`;
+export const childReviewsTableSql = `
+  CREATE TABLE IF NOT EXISTS child_reviews (
+    id bigserial PRIMARY KEY,
+    child_id text NOT NULL REFERENCES children (id) ON DELETE CASCADE,
+    technician_email text NOT NULL,
+    reviewed_at timestamptz NOT NULL DEFAULT now(),
+    notes text,
+    created_at timestamptz NOT NULL DEFAULT now()
+  );
+
+  CREATE INDEX IF NOT EXISTS child_reviews_child_id_idx ON child_reviews (child_id);
+`;
+
+export const databaseSchemaSql = `${childrenTableSql}\n${techniciansTableSql}\n${childReviewsTableSql}`;
