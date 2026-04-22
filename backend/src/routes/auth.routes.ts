@@ -1,31 +1,18 @@
 import type { FastifyInstance } from "fastify";
-import bcrypt from "bcryptjs";
-import { z } from "zod";
-import { techniciansRepository } from "../repositories/technicians.repository.js";
-
-const authSchema = z.object({
-  username: z.string().trim().email(),
-  password: z.string().min(1)
-});
+import { loginController } from "../controllers/auth.controller.js";
+import { loginSchema } from "../schemas/auth.schema.js";
 
 export async function authRoutes(app: FastifyInstance) {
   app.post("/auth/token", async (request, reply) => {
-    const bodyResult = authSchema.safeParse(request.body);
+    const bodyResult = loginSchema.safeParse(request.body);
 
     if (!bodyResult.success) {
       return reply.code(400).send({ message: "Payload inválido" });
     }
 
-    const { username, password } = bodyResult.data;
-    const technician = await techniciansRepository.findByEmail(username);
+    const technician = await loginController(bodyResult.data);
 
     if (!technician) {
-      return reply.code(401).send({ message: "Credenciais inválidas" });
-    }
-
-    const isValidPassword = await bcrypt.compare(password, technician.password_hash);
-
-    if (!isValidPassword) {
       return reply.code(401).send({ message: "Credenciais inválidas" });
     }
 

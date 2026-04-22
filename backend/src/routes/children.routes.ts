@@ -1,52 +1,23 @@
 import type { FastifyInstance } from "fastify";
-import { z } from "zod";
-import { childrenRepository } from "../repositories/children.repository.js";
-
-const paramsSchema = z.object({
-  id: z.string().trim().min(1)
-});
-
-const parseBoolean = (value: unknown): boolean | undefined => {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-
-    if (normalized === "true") {
-      return true;
-    }
-
-    if (normalized === "false") {
-      return false;
-    }
-  }
-
-  return undefined;
-};
-
-const querySchema = z.object({
-  q: z.string().trim().min(1).optional(),
-  bairro: z.string().trim().min(1).optional(),
-  revisado: z.preprocess(parseBoolean, z.boolean().optional()),
-  incompleto: z.preprocess(parseBoolean, z.boolean().optional()),
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(10)
-});
+import {
+  getChildController,
+  getSummaryController,
+  listChildrenController,
+  reviewChildController
+} from "../controllers/children.controller.js";
+import {
+  childParamsSchema,
+  childrenQuerySchema
+} from "../schemas/children.schema.js";
 
 export async function childrenRoutes(app: FastifyInstance) {
   app.get("/summary", async (request, reply) => {
-    const summary = await childrenRepository.getSummary();
+    const summary = await getSummaryController();
     return reply.send(summary);
   });
 
   app.get("/children", async (request, reply) => {
-    const queryResult = querySchema.safeParse(request.query);
+    const queryResult = childrenQuerySchema.safeParse(request.query);
 
     if (!queryResult.success) {
       return reply.code(400).send({ message: "Query inválida" });
@@ -54,7 +25,7 @@ export async function childrenRoutes(app: FastifyInstance) {
 
     const { q, bairro, revisado, incompleto, page, pageSize } = queryResult.data;
 
-    const result = await childrenRepository.findAllPaginated(
+    const result = await listChildrenController(
       { q, bairro, revisado, incompleto },
       { page, pageSize }
     );
@@ -63,13 +34,13 @@ export async function childrenRoutes(app: FastifyInstance) {
   });
 
   app.get("/children/:id", async (request, reply) => {
-    const paramsResult = paramsSchema.safeParse(request.params);
+    const paramsResult = childParamsSchema.safeParse(request.params);
 
     if (!paramsResult.success) {
       return reply.code(400).send({ message: "Parâmetros inválidos" });
     }
 
-    const child = await childrenRepository.findById(paramsResult.data.id);
+    const child = await getChildController(paramsResult.data);
 
     if (!child) {
       return reply.code(404).send({ message: "Criança não encontrada" });
@@ -82,16 +53,15 @@ export async function childrenRoutes(app: FastifyInstance) {
     "/children/:id/review",
     { preHandler: [app.authenticate] },
     async (request, reply) => {
-      const paramsResult = paramsSchema.safeParse(request.params);
+      const paramsResult = childParamsSchema.safeParse(request.params);
 
       if (!paramsResult.success) {
         return reply.code(400).send({ message: "Parâmetros inválidos" });
       }
 
-      const { id } = paramsResult.data;
       const reviewer = request.user.preferred_username;
 
-      const updatedChild = await childrenRepository.markAsReviewed(id, reviewer);
+      const updatedChild = await reviewChildController(paramsResult.data, reviewer);
 
       if (!updatedChild) {
         return reply.code(404).send({ message: "Criança não encontrada" });
