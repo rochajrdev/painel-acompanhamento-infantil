@@ -19,4 +19,14 @@ export const childrenTableSql = `
   CREATE INDEX IF NOT EXISTS children_revisado_idx ON children (revisado);
 `;
 
-export const databaseSchemaSql = childrenTableSql;
+export const techniciansTableSql = `
+  CREATE TABLE IF NOT EXISTS technicians (
+    id bigserial PRIMARY KEY,
+    email text NOT NULL UNIQUE,
+    password_hash text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+`;
+
+export const databaseSchemaSql = `${childrenTableSql}\n${techniciansTableSql}`;

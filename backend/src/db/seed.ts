@@ -1,8 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import bcrypt from "bcryptjs";
 import type { ChildRecord } from "../types/child.types.js";
 import { childrenRepository } from "../repositories/children.repository.js";
+import { env } from "../config/env.js";
+import { techniciansRepository } from "../repositories/technicians.repository.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +17,13 @@ export async function loadSeedData(): Promise<ChildRecord[]> {
 }
 
 export async function seedDatabase(): Promise<void> {
+  const totalTechnicians = await techniciansRepository.count();
+
+  if (totalTechnicians === 0) {
+    const passwordHash = await bcrypt.hash(env.SEED_TECHNICIAN_PASSWORD, 10);
+    await techniciansRepository.create(env.SEED_TECHNICIAN_EMAIL, passwordHash);
+  }
+
   const totalChildren = await childrenRepository.count();
 
   if (totalChildren > 0) {

@@ -124,6 +124,38 @@ export class ChildrenRepository {
 
     return result.rows[0] ? mapRow(result.rows[0]) : null;
   }
+
+  async markAsReviewed(
+    id: string,
+    reviewedBy: string
+  ): Promise<ChildRecord | null> {
+    const result = await pool.query<ChildRow>(
+      `
+        UPDATE children
+        SET
+          revisado = true,
+          revisado_por = $2,
+          revisado_em = now(),
+          updated_at = now()
+        WHERE id = $1
+        RETURNING
+          id,
+          nome,
+          data_nascimento::text AS data_nascimento,
+          bairro,
+          responsavel,
+          saude,
+          educacao,
+          assistencia_social,
+          revisado,
+          revisado_por,
+          revisado_em::text AS revisado_em
+      `,
+      [id, reviewedBy]
+    );
+
+    return result.rows[0] ? mapRow(result.rows[0]) : null;
+  }
 }
 
 export const childrenRepository = new ChildrenRepository();
