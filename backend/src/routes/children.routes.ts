@@ -5,6 +5,7 @@ import {
   listChildrenController,
   reviewChildController
 } from "../controllers/children.controller.js";
+import { AppError } from "../errors/appError.js";
 import {
   childParamsSchema,
   childrenQuerySchema
@@ -20,7 +21,7 @@ export async function childrenRoutes(app: FastifyInstance) {
     const queryResult = childrenQuerySchema.safeParse(request.query);
 
     if (!queryResult.success) {
-      return reply.code(400).send({ message: "Query inválida" });
+      throw new AppError("Query inválida", 400);
     }
 
     const { q, bairro, revisado, incompleto, page, pageSize } = queryResult.data;
@@ -37,14 +38,10 @@ export async function childrenRoutes(app: FastifyInstance) {
     const paramsResult = childParamsSchema.safeParse(request.params);
 
     if (!paramsResult.success) {
-      return reply.code(400).send({ message: "Parâmetros inválidos" });
+      throw new AppError("Parâmetros inválidos", 400);
     }
 
     const child = await getChildController(paramsResult.data);
-
-    if (!child) {
-      return reply.code(404).send({ message: "Criança não encontrada" });
-    }
 
     return reply.send(child);
   });
@@ -56,16 +53,12 @@ export async function childrenRoutes(app: FastifyInstance) {
       const paramsResult = childParamsSchema.safeParse(request.params);
 
       if (!paramsResult.success) {
-        return reply.code(400).send({ message: "Parâmetros inválidos" });
+        throw new AppError("Parâmetros inválidos", 400);
       }
 
       const reviewer = request.user.preferred_username;
 
       const updatedChild = await reviewChildController(paramsResult.data, reviewer);
-
-      if (!updatedChild) {
-        return reply.code(404).send({ message: "Criança não encontrada" });
-      }
 
       return reply.send(updatedChild);
     }

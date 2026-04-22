@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { env } from "./config/env.js";
+import { errorHandler } from "./errors/errorHandler.js";
 import { authenticate } from "./middlewares/authenticate.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { childrenRoutes } from "./routes/children.routes.js";
@@ -19,6 +20,7 @@ app.register(jwt, {
 });
 
 app.decorate("authenticate", authenticate);
+app.setErrorHandler(errorHandler);
 
 app.register(authRoutes);
 app.register(childrenRoutes);

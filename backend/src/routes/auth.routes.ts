@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { loginController } from "../controllers/auth.controller.js";
+import { AppError } from "../errors/appError.js";
 import { loginSchema } from "../schemas/auth.schema.js";
 
 export async function authRoutes(app: FastifyInstance) {
@@ -7,14 +8,10 @@ export async function authRoutes(app: FastifyInstance) {
     const bodyResult = loginSchema.safeParse(request.body);
 
     if (!bodyResult.success) {
-      return reply.code(400).send({ message: "Payload inválido" });
+      throw new AppError("Payload inválido", 400);
     }
 
     const technician = await loginController(bodyResult.data);
-
-    if (!technician) {
-      return reply.code(401).send({ message: "Credenciais inválidas" });
-    }
 
     const token = await reply.jwtSign(
       { preferred_username: technician.email },

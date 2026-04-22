@@ -1,19 +1,6 @@
-import bcrypt from "bcryptjs";
-import { techniciansRepository } from "../repositories/technicians.repository.js";
 import type { LoginInput } from "../schemas/auth.schema.js";
+import { authService } from "../services/auth.service.js";
 
 export async function loginController(input: LoginInput) {
-  const technician = await techniciansRepository.findByEmail(input.username);
-
-  if (!technician) {
-    return null;
-  }
-
-  const isValidPassword = await bcrypt.compare(input.password, technician.password_hash);
-
-  if (!isValidPassword) {
-    return null;
-  }
-
-  return { email: technician.email };
+  return authService.authenticate(input.username, input.password);
 }
