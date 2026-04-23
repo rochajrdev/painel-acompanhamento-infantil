@@ -11,12 +11,12 @@ import { Toast } from "@/components/Toast";
 interface ChildDetail {
   id: string;
   nome: string;
-  idade: number;
+  data_nascimento: string;
   bairro: string;
   revisado_em: string | null;
   saude: Record<string, any> | null;
   educacao: Record<string, any> | null;
-  assistencia: Record<string, any> | null;
+  assistencia_social: Record<string, any> | null;
 }
 
 export default function ChildDetailPage() {
@@ -29,6 +29,19 @@ export default function ChildDetailPage() {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const id = params.id as string;
+
+  const getIdade = (dataNascimento: string) => {
+    const hoje = new Date();
+    const nascimento = new Date(dataNascimento);
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
+
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade -= 1;
+    }
+
+    return idade;
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -130,7 +143,7 @@ export default function ChildDetailPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <p className="text-sm text-slate-500">Idade</p>
-            <p className="text-xl font-semibold text-slate-900">{child.idade} anos</p>
+            <p className="text-xl font-semibold text-slate-900">{getIdade(child.data_nascimento)} anos</p>
           </div>
           <div>
             <p className="text-sm text-slate-500">Bairro</p>
@@ -156,7 +169,7 @@ export default function ChildDetailPage() {
       <div className="grid gap-4 md:grid-cols-3">
         {renderDetails(child.saude, "Saúde")}
         {renderDetails(child.educacao, "Educação")}
-        {renderDetails(child.assistencia, "Assistência")}
+        {renderDetails(child.assistencia_social, "Assistência")}
       </div>
 
       {!child.revisado_em && (

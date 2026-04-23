@@ -10,19 +10,20 @@ import { Toast } from "@/components/Toast";
 interface Child {
   id: string;
   nome: string;
-  idade: number;
+  data_nascimento: string;
   bairro: string;
   revisado_em: string | null;
-  saude: { alerta: boolean } | null;
-  educacao: { alerta: boolean } | null;
-  assistencia: { alerta: boolean } | null;
+  saude: { alertas?: string[] } | null;
+  educacao: { alertas?: string[] } | null;
+  assistencia_social: { alertas?: string[] } | null;
 }
 
 interface ChildrenResponse {
-  data: Child[];
+  items: Child[];
   total: number;
   page: number;
   pageSize: number;
+  totalPages: number;
 }
 
 export default function ChildrenPage() {
@@ -30,7 +31,7 @@ export default function ChildrenPage() {
   const { isAuthenticated, isLoading: authLoading, token } = useAuth();
   const [children, setChildren] = useState<Child[]>([]);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -60,7 +61,7 @@ export default function ChildrenPage() {
           method: "GET",
           token: token || undefined
         });
-        setChildren(data.data);
+        setChildren(data.items ?? []);
         setTotal(data.total);
       } catch (error) {
         console.error("Erro ao carregar crianças:", error);
@@ -82,7 +83,24 @@ export default function ChildrenPage() {
   };
 
   const hasAlerts = (child: Child) => {
-    return (child.saude?.alerta || child.educacao?.alerta || child.assistencia?.alerta) ?? false;
+    return Boolean(
+      (child.saude?.alertas?.length ?? 0) > 0 ||
+      (child.educacao?.alertas?.length ?? 0) > 0 ||
+      (child.assistencia_social?.alertas?.length ?? 0) > 0
+    );
+  };
+
+  const getIdade = (dataNascimento: string) => {
+    const hoje = new Date();
+    const nascimento = new Date(dataNascimento);
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
+
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade -= 1;
+    }
+
+    return idade;
   };
 
   return (
@@ -155,7 +173,7 @@ export default function ChildrenPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold text-slate-900">{child.nome}</h3>
-                    <p className="text-sm text-slate-500">{child.idade} anos • {child.bairro}</p>
+                    <p className="text-sm text-slate-500">{getIdade(child.data_nascimento)} anos • {child.bairro}</p>
                   </div>
                   {hasAlerts(child) && (
                     <span className="inline-block rounded bg-orange-100 px-2 py-1 text-xs font-semibold text-orange-700">
