@@ -138,12 +138,21 @@ Arquivo: `.env.example`
 ## Como executar
 
 ### Com Docker
-1. Subir a stack:
+1. Subir a stack (modo desenvolvimento):
    - `docker compose up -d --build`
 2. Acessar:
    - Frontend: `http://localhost:3000`
    - Backend: `http://localhost:3333`
    - Postgres: `localhost:5432`
+3. Desenvolvimento contínuo:
+   - As alterações em `frontend/` e `backend/` refletem automaticamente (hot reload/watch)
+   - Não é necessário usar `docker compose down` a cada mudança de código
+
+### Observação importante (VS Code e tipagem)
+- O `docker-compose.yml` está configurado para instalar dependências automaticamente no startup (`npm ci`) e montar `node_modules` no host.
+- Isso evita erros locais de tipagem/import no editor após subir o projeto do zero em uma máquina nova.
+- Se atualizar dependências (`package.json`), rode novamente:
+  - `docker compose up -d --build`
 
 ### Sem Docker
 #### Backend
@@ -176,19 +185,19 @@ Arquivo: `.env.example`
 ## Estado atual
 
 ### Já implementado
-- estrutura inicial do backend e do frontend
-- integração básica com PostgreSQL
-- seed com dados iniciais
-- Docker para os três serviços
+- autenticação via JWT
+- endpoints de resumo, listagem, detalhe e revisão
+- dashboard, login, listagem e detalhe no frontend
+- integração com PostgreSQL e seed inicial
+- Docker com frontend, backend e banco
+- hot reload em frontend e backend via Docker
 - acesso externo ao banco para DBeaver
 
 ### Próximos passos
-- autenticação
-- rotas de listagem e detalhe de crianças
-- fluxo de revisão
-- dashboard com métricas
-- testes automatizados
-- refinamento visual do frontend
+- testes automatizados (backend, frontend e e2e)
+- melhorias de acessibilidade
+- refinamento final de UI/UX
+- preparação de ambiente de entrega (compose de produção separado)
 
 ## Convenções adotadas
 

@@ -20,12 +20,18 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      target: dev
     container_name: painel-backend
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3333
       HOST: 0.0.0.0
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/painel
+    command: sh -c "npm ci && npm run dev"
+    volumes:
+      - ./backend:/app/backend
+      - ./data:/app/data:ro
+      - ./backend/node_modules:/app/backend/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -36,12 +42,17 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      target: dev
       args:
         NEXT_PUBLIC_API_URL: http://localhost:3333
     container_name: painel-frontend
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3333
+    command: sh -c "npm ci && npm run dev -- -H 0.0.0.0"
+    volumes:
+      - ./frontend:/app/frontend
+      - ./frontend/node_modules:/app/frontend/node_modules
     depends_on:
       backend:
         condition: service_started

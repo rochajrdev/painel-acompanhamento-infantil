@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS dev
 
 WORKDIR /app/frontend
 
@@ -10,6 +10,10 @@ COPY frontend/package*.json ./
 RUN npm ci
 
 COPY frontend/ ./
+
+CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0"]
+
+FROM dev AS builder
 
 RUN npm run build
 

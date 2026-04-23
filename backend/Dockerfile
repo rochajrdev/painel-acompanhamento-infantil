@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS dev
 
 WORKDIR /app/backend
 
@@ -7,6 +7,10 @@ RUN npm ci
 
 COPY backend/ ./
 COPY data /app/data
+
+CMD ["npm", "run", "dev"]
+
+FROM dev AS builder
 
 RUN npm run build
 
