@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { apiFetch } from "@/services/api";
+import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import { Toast } from "@/components/Toast";
 
 interface ChildDetail {
@@ -22,7 +22,8 @@ interface ChildDetail {
 export default function ChildDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { isAuthenticated, isLoading: authLoading, token } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, isExpired } = useAuth();
+  const fetchWithAuth = useAuthenticatedFetch();
   const [child, setChild] = useState<ChildDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [reviewing, setReviewing] = useState(false);
@@ -46,6 +47,11 @@ export default function ChildDetailPage() {
   useEffect(() => {
     if (authLoading) return;
 
+    if (isExpired) {
+      router.replace("/login");
+      return;
+    }
+
     if (!isAuthenticated) {
       router.replace("/login");
       return;
@@ -53,36 +59,36 @@ export default function ChildDetailPage() {
 
     const fetchChild = async () => {
       try {
-        const data = await apiFetch<ChildDetail>(`/children/${id}`, {
-          method: "GET",
-          token: token || undefined
+        const data = await fetchWithAuth<ChildDetail>(`/children/${id}`, {
+          method: "GET"
         });
         setChild(data);
       } catch (error) {
         console.error("Erro ao carregar criança:", error);
-        setToast({ message: "Erro ao carregar criança", type: "error" });
+        const message = error instanceof Error ? error.message : "Erro ao carregar criança";
+        setToast({ message, type: "error" });
       } finally {
         setLoading(false);
       }
     };
 
     fetchChild();
-  }, [authLoading, isAuthenticated, token, id, router]);
+  }, [authLoading, isAuthenticated, isExpired, id, fetchWithAuth, router]);
 
   const handleReview = async () => {
     if (!child) return;
 
     setReviewing(true);
     try {
-      await apiFetch(`/children/${child.id}/review`, {
-        method: "PATCH",
-        token: token || undefined
+      await fetchWithAuth(`/children/${child.id}/review`, {
+        method: "PATCH"
       });
       setToast({ message: "Criança revisada com sucesso!", type: "success" });
       setChild(prev => prev ? { ...prev, revisado_em: new Date().toISOString() } : null);
     } catch (error) {
       console.error("Erro ao revisar criança:", error);
-      setToast({ message: "Erro ao revisar criança", type: "error" });
+      const message = error instanceof Error ? error.message : "Erro ao revisar criança";
+      setToast({ message, type: "error" });
     } finally {
       setReviewing(false);
     }

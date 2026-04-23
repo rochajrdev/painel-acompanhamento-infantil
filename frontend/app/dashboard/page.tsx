@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { apiFetch } from "@/services/api";
+import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 
 interface Summary {
   total_criancas: number;
@@ -15,12 +15,18 @@ interface Summary {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, token, logout } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, isExpired, logout } = useAuth();
+  const fetchWithAuth = useAuthenticatedFetch();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (authLoading) return;
+
+    if (isExpired) {
+      router.replace("/login");
+      return;
+    }
 
     if (!isAuthenticated) {
       router.replace("/login");
@@ -29,9 +35,8 @@ export default function DashboardPage() {
 
     const fetchSummary = async () => {
       try {
-        const data = await apiFetch<Summary>("/summary", {
-          method: "GET",
-          token: token || undefined
+        const data = await fetchWithAuth<Summary>("/summary", {
+          method: "GET"
         });
         setSummary(data);
       } catch (error) {
@@ -42,7 +47,7 @@ export default function DashboardPage() {
     };
 
     fetchSummary();
-  }, [authLoading, isAuthenticated, token, router]);
+  }, [authLoading, isAuthenticated, isExpired, fetchWithAuth, router]);
 
   const handleLogout = () => {
     logout();

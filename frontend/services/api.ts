@@ -21,7 +21,8 @@ export async function apiFetch<T>(
   });
 
   if (!response.ok) {
-    throw new Error(`Erro na API: ${response.status}`);
+    const errorMessage = `Erro na API: ${response.status}`;
+    throw new Error(errorMessage);
   }
 
   return response.json() as Promise<T>;

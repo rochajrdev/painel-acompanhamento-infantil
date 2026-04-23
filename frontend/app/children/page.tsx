@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { apiFetch } from "@/services/api";
+import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import { Toast } from "@/components/Toast";
 
 interface Child {
@@ -28,7 +28,8 @@ interface ChildrenResponse {
 
 export default function ChildrenPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, token } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, isExpired } = useAuth();
+  const fetchWithAuth = useAuthenticatedFetch();
   const [children, setChildren] = useState<Child[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
@@ -39,6 +40,11 @@ export default function ChildrenPage() {
 
   useEffect(() => {
     if (authLoading) return;
+
+    if (isExpired) {
+      router.replace("/login");
+      return;
+    }
 
     if (!isAuthenticated) {
       router.replace("/login");
@@ -57,22 +63,22 @@ export default function ChildrenPage() {
         if (filters.revisado === "false") params.set("revisado", "false");
         if (filters.incompleto === "true") params.set("incompleto", "true");
 
-        const data = await apiFetch<ChildrenResponse>(`/children?${params.toString()}`, {
-          method: "GET",
-          token: token || undefined
+        const data = await fetchWithAuth<ChildrenResponse>(`/children?${params.toString()}`, {
+          method: "GET"
         });
         setChildren(data.items ?? []);
         setTotal(data.total);
       } catch (error) {
         console.error("Erro ao carregar crianças:", error);
-        setToast({ message: "Erro ao carregar crianças", type: "error" });
+        const message = error instanceof Error ? error.message : "Erro ao carregar crianças";
+        setToast({ message, type: "error" });
       } finally {
         setLoading(false);
       }
     };
 
     fetchChildren();
-  }, [authLoading, isAuthenticated, token, page, pageSize, filters, router]);
+  }, [authLoading, isAuthenticated, isExpired, page, pageSize, filters, fetchWithAuth, router]);
 
   const totalPages = Math.ceil(total / pageSize);
 
