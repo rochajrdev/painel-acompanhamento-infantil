@@ -9,8 +9,10 @@ import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 interface Summary {
   total_criancas: number;
   total_revisadas: number;
+  criancas_com_alertas: number;
   alertas_totais: number;
-  alertas_por_area: Record<string, number>;
+  total_alertas: number;
+  alertas_por_area: Record<string, { alertas: number; criancas: number }>;
 }
 
 export default function DashboardPage() {
@@ -74,7 +76,7 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-lg bg-white p-6 shadow-md">
           <h2 className="text-sm font-medium text-slate-500">Total de Crianças</h2>
           <p className="mt-2 text-3xl font-bold text-slate-900">{summary?.total_criancas || 0}</p>
@@ -86,8 +88,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="rounded-lg bg-white p-6 shadow-md">
-          <h2 className="text-sm font-medium text-slate-500">Alertas Totais</h2>
-          <p className="mt-2 text-3xl font-bold text-orange-600">{summary?.alertas_totais || 0}</p>
+          <h2 className="text-sm font-medium text-slate-500">Crianças com Alertas</h2>
+          <p className="mt-2 text-3xl font-bold text-orange-600">{summary?.criancas_com_alertas ?? summary?.alertas_totais ?? 0}</p>
+        </div>
+
+        <div className="rounded-lg bg-white p-6 shadow-md">
+          <h2 className="text-sm font-medium text-slate-500">Total de Alertas</h2>
+          <p className="mt-2 text-3xl font-bold text-amber-700">{summary?.total_alertas || 0}</p>
         </div>
       </div>
 
@@ -95,10 +102,11 @@ export default function DashboardPage() {
         <div className="mt-8 rounded-lg bg-white p-6 shadow-md">
           <h2 className="mb-4 text-lg font-semibold text-slate-900">Alertas por Área</h2>
           <div className="grid gap-4 md:grid-cols-3">
-            {Object.entries(summary.alertas_por_area).map(([area, count]) => (
+            {Object.entries(summary.alertas_por_area).map(([area, data]) => (
               <div key={area} className="rounded border border-slate-200 p-4">
-                <p className="text-sm font-medium capitalize text-slate-700">{area}</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{count}</p>
+                <p className="text-sm font-medium capitalize text-slate-700">{area.replace('_', ' ')}</p>
+                <p className="mt-3 text-sm text-slate-600">{data.alertas} alertas</p>
+                <p className="text-sm text-slate-600">{data.criancas} crianças afetadas</p>
               </div>
             ))}
           </div>

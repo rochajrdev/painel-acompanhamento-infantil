@@ -331,7 +331,13 @@ export class ChildrenRepository {
     alertas_saude: number;
     alertas_educacao: number;
     alertas_assistencia: number;
+    criancas_saude: number;
+    criancas_educacao: number;
+    criancas_assistencia: number;
+    criancas_com_alertas: number;
     alertas_totais: number;
+    total_alertas: number;
+    alertas_por_area: Record<string, {alertas: number; criancas: number}>;
   }> {
     const result = await pool.query<{
       total_criancas: string;
@@ -339,14 +345,102 @@ export class ChildrenRepository {
       alertas_saude: string;
       alertas_educacao: string;
       alertas_assistencia: string;
+      criancas_saude: string;
+      criancas_educacao: string;
+      criancas_assistencia: string;
+      criancas_com_alertas: string;
+      total_alertas: string;
+      alertas_totais: string;
     }>(
       `
         SELECT
           COUNT(*)::text AS total_criancas,
           SUM(CASE WHEN revisado THEN 1 ELSE 0 END)::text AS total_revisadas,
-          COUNT(CASE WHEN saude IS NOT NULL AND (saude ->> 'alertas')::jsonb != '[]' THEN 1 END)::text AS alertas_saude,
-          COUNT(CASE WHEN educacao IS NOT NULL AND (educacao ->> 'alertas')::jsonb != '[]' THEN 1 END)::text AS alertas_educacao,
-          COUNT(CASE WHEN assistencia_social IS NOT NULL AND (assistencia_social ->> 'alertas')::jsonb != '[]' THEN 1 END)::text AS alertas_assistencia
+          COALESCE(SUM(CASE
+            WHEN saude IS NOT NULL
+              AND jsonb_typeof(saude -> 'alertas') = 'array'
+            THEN jsonb_array_length(saude -> 'alertas')
+            ELSE 0
+          END), 0)::text AS alertas_saude,
+          COALESCE(SUM(CASE
+            WHEN educacao IS NOT NULL
+              AND jsonb_typeof(educacao -> 'alertas') = 'array'
+            THEN jsonb_array_length(educacao -> 'alertas')
+            ELSE 0
+          END), 0)::text AS alertas_educacao,
+          COALESCE(SUM(CASE
+            WHEN assistencia_social IS NOT NULL
+              AND jsonb_typeof(assistencia_social -> 'alertas') = 'array'
+            THEN jsonb_array_length(assistencia_social -> 'alertas')
+            ELSE 0
+          END), 0)::text AS alertas_assistencia,
+          COUNT(*) FILTER (
+            WHERE saude IS NOT NULL
+              AND jsonb_typeof(saude -> 'alertas') = 'array'
+              AND jsonb_array_length(saude -> 'alertas') > 0
+          )::text AS criancas_saude,
+          COUNT(*) FILTER (
+            WHERE educacao IS NOT NULL
+              AND jsonb_typeof(educacao -> 'alertas') = 'array'
+              AND jsonb_array_length(educacao -> 'alertas') > 0
+          )::text AS criancas_educacao,
+          COUNT(*) FILTER (
+            WHERE assistencia_social IS NOT NULL
+              AND jsonb_typeof(assistencia_social -> 'alertas') = 'array'
+              AND jsonb_array_length(assistencia_social -> 'alertas') > 0
+          )::text AS criancas_assistencia,
+          COUNT(*) FILTER (
+            WHERE (
+              saude IS NOT NULL
+              AND jsonb_typeof(saude -> 'alertas') = 'array'
+              AND jsonb_array_length(saude -> 'alertas') > 0
+            ) OR (
+              educacao IS NOT NULL
+              AND jsonb_typeof(educacao -> 'alertas') = 'array'
+              AND jsonb_array_length(educacao -> 'alertas') > 0
+            ) OR (
+              assistencia_social IS NOT NULL
+              AND jsonb_typeof(assistencia_social -> 'alertas') = 'array'
+              AND jsonb_array_length(assistencia_social -> 'alertas') > 0
+            )
+          )::text AS criancas_com_alertas,
+          (
+            COALESCE(SUM(CASE
+              WHEN saude IS NOT NULL
+                AND jsonb_typeof(saude -> 'alertas') = 'array'
+              THEN jsonb_array_length(saude -> 'alertas')
+              ELSE 0
+            END), 0)
+            +
+            COALESCE(SUM(CASE
+              WHEN educacao IS NOT NULL
+                AND jsonb_typeof(educacao -> 'alertas') = 'array'
+              THEN jsonb_array_length(educacao -> 'alertas')
+              ELSE 0
+            END), 0)
+            +
+            COALESCE(SUM(CASE
+              WHEN assistencia_social IS NOT NULL
+                AND jsonb_typeof(assistencia_social -> 'alertas') = 'array'
+              THEN jsonb_array_length(assistencia_social -> 'alertas')
+              ELSE 0
+            END), 0)
+          )::text AS total_alertas,
+          COUNT(*) FILTER (
+            WHERE (
+              saude IS NOT NULL
+              AND jsonb_typeof(saude -> 'alertas') = 'array'
+              AND jsonb_array_length(saude -> 'alertas') > 0
+            ) OR (
+              educacao IS NOT NULL
+              AND jsonb_typeof(educacao -> 'alertas') = 'array'
+              AND jsonb_array_length(educacao -> 'alertas') > 0
+            ) OR (
+              assistencia_social IS NOT NULL
+              AND jsonb_typeof(assistencia_social -> 'alertas') = 'array'
+              AND jsonb_array_length(assistencia_social -> 'alertas') > 0
+            )
+          )::text AS alertas_totais
         FROM children
       `
     );
@@ -355,6 +449,9 @@ export class ChildrenRepository {
     const alertas_saude = Number(row?.alertas_saude ?? 0);
     const alertas_educacao = Number(row?.alertas_educacao ?? 0);
     const alertas_assistencia = Number(row?.alertas_assistencia ?? 0);
+    const criancas_saude = Number(row?.criancas_saude ?? 0);
+    const criancas_educacao = Number(row?.criancas_educacao ?? 0);
+    const criancas_assistencia = Number(row?.criancas_assistencia ?? 0);
 
     return {
       total_criancas: Number(row?.total_criancas ?? 0),
@@ -362,7 +459,26 @@ export class ChildrenRepository {
       alertas_saude,
       alertas_educacao,
       alertas_assistencia,
-      alertas_totais: alertas_saude + alertas_educacao + alertas_assistencia
+      criancas_saude,
+      criancas_educacao,
+      criancas_assistencia,
+      criancas_com_alertas: Number(row?.criancas_com_alertas ?? 0),
+      alertas_totais: Number(row?.alertas_totais ?? 0),
+      total_alertas: Number(row?.total_alertas ?? 0),
+      alertas_por_area: {
+        saude: {
+          alertas: alertas_saude,
+          criancas: criancas_saude
+        },
+        educacao: {
+          alertas: alertas_educacao,
+          criancas: criancas_educacao
+        },
+        assistencia_social: {
+          alertas: alertas_assistencia,
+          criancas: criancas_assistencia
+        }
+      }
     };
   }
 }
