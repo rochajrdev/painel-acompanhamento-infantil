@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { isJWTExpired, getTokenTimeToExpiry } from "@/lib/jwt-utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
@@ -9,33 +9,40 @@ export function useAuth() {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const expiryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("token");
+    if (typeof window === "undefined") {
+      return;
+    }
 
-      // Se tem token armazenado e está expirado, remover
-      if (stored && isJWTExpired(stored)) {
-        localStorage.removeItem("token");
-        setToken(null);
-      } else {
-        setToken(stored);
+    const stored = localStorage.getItem("token");
 
-        // Se tem token válido, agendar logout quando expirar
-        if (stored) {
-          const timeToExpiry = getTokenTimeToExpiry(stored);
-          if (timeToExpiry !== Infinity && timeToExpiry > 0) {
-            const timeoutId = setTimeout(() => {
-              localStorage.removeItem("token");
-              setToken(null);
-            }, timeToExpiry);
+    if (stored && isJWTExpired(stored)) {
+      localStorage.removeItem("token");
+      setToken(null);
+    } else {
+      setToken(stored);
 
-            return () => clearTimeout(timeoutId);
-          }
+      if (stored) {
+        const timeToExpiry = getTokenTimeToExpiry(stored);
+
+        if (timeToExpiry !== Infinity && timeToExpiry > 0) {
+          expiryTimeoutRef.current = setTimeout(() => {
+            localStorage.removeItem("token");
+            setToken(null);
+          }, timeToExpiry);
         }
       }
     }
+
     setIsLoading(false);
+
+    return () => {
+      if (expiryTimeoutRef.current) {
+        clearTimeout(expiryTimeoutRef.current);
+      }
+    };
   }, []);
 
   const login = useCallback(
@@ -70,6 +77,10 @@ export function useAuth() {
   );
 
   const logout = useCallback(() => {
+    if (expiryTimeoutRef.current) {
+      clearTimeout(expiryTimeoutRef.current);
+      expiryTimeoutRef.current = null;
+    }
     localStorage.removeItem("token");
     setToken(null);
   }, []);

@@ -7,19 +7,22 @@ import { Toast } from "@/components/Toast";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, error, isAuthenticated } = useAuth();
+  const { login, isLoading: authLoading, error, isAuthenticated } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (!authLoading && isAuthenticated) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
+
     const success = await login(username, password);
 
     if (success) {
@@ -28,6 +31,8 @@ export default function LoginPage() {
     } else {
       setToast({ message: error || "Erro ao fazer login", type: "error" });
     }
+
+    setSubmitting(false);
   };
 
   return (
@@ -70,10 +75,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={authLoading || submitting}
             className="w-full rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {isLoading ? "Entrando..." : "Entrar"}
+            {authLoading ? "Carregando..." : submitting ? "Entrando..." : "Entrar"}
           </button>
         </form>
       </div>

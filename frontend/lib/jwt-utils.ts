@@ -8,10 +8,14 @@ export function decodeJWT(token: string): Record<string, unknown> {
       throw new Error("Token inválido");
     }
 
-    const payload = parts[1];
+    const payload = parts[1]
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+    const paddedPayload = payload.padEnd(payload.length + (4 - (payload.length % 4)) % 4, "=");
+
     // Usar atob() em vez de Buffer para compatibilidade com navegador
     const decoded = JSON.parse(
-      atob(payload)
+      atob(paddedPayload)
     ) as Record<string, unknown>;
 
     return decoded;
