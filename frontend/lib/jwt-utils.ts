@@ -9,8 +9,9 @@ export function decodeJWT(token: string): Record<string, unknown> {
     }
 
     const payload = parts[1];
+    // Usar atob() em vez de Buffer para compatibilidade com navegador
     const decoded = JSON.parse(
-      Buffer.from(payload, "base64").toString("utf-8")
+      atob(payload)
     ) as Record<string, unknown>;
 
     return decoded;
