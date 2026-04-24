@@ -23,3 +23,7 @@ export async function getChildController(params: ChildParamsInput) {
 export async function reviewChildController(params: ChildParamsInput, reviewer: string) {
   return childrenService.markAsReviewed(params.id, reviewer);
 }
+
+export async function getAlertsHeatmapController() {
+  return childrenService.getAlertsHeatmap();
+}

@@ -1,12 +1,28 @@
 "use client";
 
 import { Public_Sans } from "next/font/google";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { io, type Socket } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import { decodeJWT } from "@/lib/jwt-utils";
+import type { HeatmapPoint } from "@/components/AlertHeatmapCard";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
+
+interface AlertHeatmapCardProps {
+  points: HeatmapPoint[];
+  updatedAt: string | null;
+  sidebarOpen: boolean;
+}
+
+const AlertHeatmapCard = dynamic<AlertHeatmapCardProps>(
+  () => import("@/components/AlertHeatmapCard").then((mod) => mod.AlertHeatmapCard),
+  { ssr: false }
+);
 
 const publicSans = Public_Sans({
   subsets: ["latin"],
@@ -33,6 +49,11 @@ interface ChildItem {
 interface ChildrenResponse {
   items: ChildItem[];
   totalPages: number;
+}
+
+interface HeatmapResponse {
+  updated_at: string;
+  points: HeatmapPoint[];
 }
 
 type IconName =
@@ -223,6 +244,10 @@ export default function DashboardPage() {
   const fetchWithAuth = useAuthenticatedFetch();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [children, setChildren] = useState<ChildItem[]>([]);
+  const [heatmap, setHeatmap] = useState<HeatmapResponse>({
+    updated_at: "",
+    points: []
+  });
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -294,9 +319,10 @@ export default function DashboardPage() {
 
     const fetchDashboardData = async () => {
       try {
-        const [summaryData, firstChildrenPage] = await Promise.all([
+        const [summaryData, firstChildrenPage, heatmapData] = await Promise.all([
           fetchWithAuth<Summary>("/summary", { method: "GET" }),
-          fetchWithAuth<ChildrenResponse>("/children?page=1&pageSize=100", { method: "GET" })
+          fetchWithAuth<ChildrenResponse>("/children?page=1&pageSize=100", { method: "GET" }),
+          fetchWithAuth<HeatmapResponse>("/heatmap/alerts", { method: "GET" })
         ]);
 
         const pages: Promise<ChildrenResponse>[] = [];
@@ -317,6 +343,7 @@ export default function DashboardPage() {
 
         setSummary(summaryData);
         setChildren(allChildren);
+        setHeatmap(heatmapData);
       } catch (error) {
         console.error("Erro ao carregar dados do dashboard:", error);
       } finally {
@@ -326,6 +353,24 @@ export default function DashboardPage() {
 
     fetchDashboardData();
   }, [authLoading, isAuthenticated, isExpired, fetchWithAuth, router]);
+
+  useEffect(() => {
+    if (authLoading || isExpired || !isAuthenticated) {
+      return;
+    }
+
+    const socket: Socket = io(API_URL, {
+      transports: ["websocket", "polling"]
+    });
+
+    socket.on("heatmap:update", (payload: HeatmapResponse) => {
+      setHeatmap(payload);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [authLoading, isAuthenticated, isExpired]);
 
   const handleLogout = () => {
     logout();
@@ -592,6 +637,14 @@ export default function DashboardPage() {
                 })}
               </div>
             </section>
+          </div>
+
+          <div className="mb-10">
+            <AlertHeatmapCard
+              points={heatmap.points}
+              updatedAt={heatmap.updated_at || null}
+              sidebarOpen={isSidebarOpen}
+            />
           </div>
 
           <footer className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-slate-200 py-8 text-xs text-slate-400 md:flex-row md:items-center">

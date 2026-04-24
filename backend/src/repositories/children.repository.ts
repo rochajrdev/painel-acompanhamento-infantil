@@ -23,6 +23,13 @@ export interface PaginatedChildrenResult {
   totalPages: number;
 }
 
+export interface HeatmapChildRow {
+  bairro: string;
+  saude: ChildRecord["saude"];
+  educacao: ChildRecord["educacao"];
+  assistencia_social: ChildRecord["assistencia_social"];
+}
+
 function normalizeAlertas(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
@@ -323,6 +330,21 @@ export class ChildrenRepository {
     } finally {
       client.release();
     }
+  }
+
+  async findForHeatmap(): Promise<HeatmapChildRow[]> {
+    const result = await pool.query<HeatmapChildRow>(
+      `
+        SELECT
+          bairro,
+          saude,
+          educacao,
+          assistencia_social
+        FROM children
+      `
+    );
+
+    return result.rows;
   }
 
   async getSummary(): Promise<{

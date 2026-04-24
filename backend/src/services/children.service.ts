@@ -1,5 +1,6 @@
 import { AppError } from "../errors/appError.js";
 import { childrenRepository } from "../repositories/children.repository.js";
+import { heatmapService } from "./heatmap.service.js";
 import type {
   ChildrenFilters,
   PaginationOptions
@@ -28,6 +29,10 @@ export class ChildrenService {
     }
 
     return updatedChild;
+  }
+
+  async getAlertsHeatmap() {
+    return heatmapService.getAlertsHeatmap();
   }
 }
 

@@ -1,10 +1,12 @@
 import type { FastifyInstance } from "fastify";
 import {
+  getAlertsHeatmapController,
   getChildController,
   getSummaryController,
   listChildrenController,
   reviewChildController
 } from "../controllers/children.controller.js";
+import { emitHeatmapUpdate } from "../realtime/socket.js";
 import { AppError } from "../errors/appError.js";
 import {
   childParamsSchema,
@@ -15,6 +17,11 @@ export async function childrenRoutes(app: FastifyInstance) {
   app.get("/summary", async (request, reply) => {
     const summary = await getSummaryController();
     return reply.send(summary);
+  });
+
+  app.get("/heatmap/alerts", async (request, reply) => {
+    const heatmap = await getAlertsHeatmapController();
+    return reply.send(heatmap);
   });
 
   app.get("/children", async (request, reply) => {
@@ -59,6 +66,9 @@ export async function childrenRoutes(app: FastifyInstance) {
       const reviewer = request.user.preferred_username;
 
       const updatedChild = await reviewChildController(paramsResult.data, reviewer);
+      const heatmap = await getAlertsHeatmapController();
+
+      emitHeatmapUpdate(heatmap);
 
       return reply.send(updatedChild);
     }
