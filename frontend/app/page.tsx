@@ -19,9 +19,9 @@ export default function HomePage() {
               src={silhuetaRio}
               alt="Silhueta da cidade do Rio de Janeiro"
               priority
-              className="absolute bottom-0 left-0 h-auto w-full object-cover object-bottom opacity-55 mix-blend-screen"
+              className="absolute bottom-0 left-0 h-auto w-full object-cover object-bottom opacity-25"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00346f]/80 via-[#00346f]/45 to-[#00346f]/60" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00346f]/96 via-[#00346f]/90 to-[#00346f]/94" />
           </div>
 
           <div className="relative z-10 w-full px-4 py-12 sm:px-6 sm:py-16 lg:px-10 xl:px-14">
