@@ -10,6 +10,10 @@ export function errorHandler(
     return reply.code(error.statusCode).send({ message: error.message });
   }
 
+  if (typeof error.statusCode === "number" && error.statusCode >= 400 && error.statusCode < 600) {
+    return reply.code(error.statusCode).send({ message: error.message });
+  }
+
   request.log.error(error);
   return reply.code(500).send({ message: "Erro interno do servidor" });
 }
