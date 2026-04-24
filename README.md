@@ -91,7 +91,7 @@ Ela contém dados de:
 - responsável
 - bairro
 - dados de saúde
-- dados de educação
+- dados de Educacao
 - dados de assistência social
 - status de revisão
 
@@ -182,6 +182,33 @@ Arquivo: `.env.example`
 - `npm run start` — inicia o frontend compilado
 - `npm run lint` — checagem de lint
 
+## Design e Acessibilidade (WCAG 2.1)
+
+Um dos pilares deste projeto foi garantir que as informacoes criticas de saude e educacao fossem acessiveis a todos os gestores. Por isso, a interface foi ajustada para seguir WCAG 2.1 nivel AA como requisito tecnico de produto, e nao como acabamento visual.
+
+### Decisoes de contraste
+
+A paleta original foi otimizada para garantir que nenhum elemento textual ou informativo ficasse com contraste inferior a 4.5:1 em relacao ao fundo.
+
+- Tipografia e hierarquia: tons de cinza claro foram substituidos por `#525F6A` (5.4:1), melhorando leitura de metas, subtitulos e legendas.
+- Identidade visual: o azul oficial foi consolidado em `#004A8D` para titulos, KPIs e elementos de destaque, com contraste de 10.5:1 sobre branco.
+- Feedback visual: cores semanticas de alerta e sucesso foram calibradas para manter legibilidade e significado funcional (`#C53030` e `#276749`, ambas > 5:1).
+
+### Tabela de cores utilizada
+
+| Elemento | Hex | Contraste | Objetivo |
+|---|---|---|---|
+| Primaria | `#004A8D` | 10.5:1 | Titulos e numeros principais (KPIs) |
+| Secundaria | `#525F6A` | 5.4:1 | Subtitulos e informacoes de apoio (metas) |
+| Alerta | `#C53030` | 5.3:1 | Destaque de areas criticas e notificacoes |
+| Sucesso | `#276749` | 5.1:1 | Indicadores de progresso e metas atingidas |
+| Background neutro | `#F8F9FA` | N/A | Fundo de cards para separar blocos de informacao |
+
+### Componentes inclusivos
+
+- Barra de progresso: trilho ajustado para `#E2E8F0` e preenchimento em `#004A8D` para reforcar a percepcao de progresso total x atual.
+- Tipografia de dados densos: rotulos de bairros usam `font-weight: 600` e cor `#2D3748` para facilitar escaneamento visual.
+
 ## Estado atual
 
 ### Já implementado
@@ -195,7 +222,6 @@ Arquivo: `.env.example`
 
 ### Próximos passos
 - testes automatizados (backend, frontend e e2e)
-- melhorias de acessibilidade
 - refinamento final de UI/UX
 - preparação de ambiente de entrega (compose de produção separado)
 

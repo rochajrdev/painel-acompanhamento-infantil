@@ -18,8 +18,15 @@ export default function LoginPage() {
   const { login, isLoading: authLoading, error, isAuthenticated } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [usernameTouched, setUsernameTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const minPasswordLength = 6;
+  const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username);
+  const passwordIsValid = password.length >= minPasswordLength;
+  const canSubmit = emailIsValid && passwordIsValid && !authLoading && !submitting;
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -29,6 +36,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit) return;
     setSubmitting(true);
 
     const success = await login(username, password);
@@ -89,13 +97,19 @@ export default function LoginPage() {
                     id="username"
                     name="email"
                     type="email"
+                    autoComplete="email"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    onBlur={() => setUsernameTouched(true)}
                     placeholder="nome.sobrenome@rio.rj.gov.br"
-                    className="h-12 w-full rounded-[4px] border border-[#c2c6d3] bg-transparent pl-11 pr-4 text-[16px] leading-6 text-[#0b1c30] outline-none transition-all placeholder:text-[#737783] focus:border-[#00346f] focus:ring-2 focus:ring-[#00346f]"
+                    aria-invalid={usernameTouched && !emailIsValid}
+                    className="h-12 w-full rounded-[4px] border border-[#c2c6d3] bg-[#F8FAFC] pl-11 pr-4 text-[16px] leading-6 text-[#0b1c30] outline-none transition-all placeholder:text-[#737783] focus:border-[#004A8D] focus:ring-2 focus:ring-[#004A8D]"
                     required
                   />
                 </div>
+                {usernameTouched && !emailIsValid && (
+                  <p className="text-xs font-medium text-red-700">Informe um email valido.</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -118,25 +132,41 @@ export default function LoginPage() {
                     id="password"
                     name="password"
                     type="password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onBlur={() => setPasswordTouched(true)}
                     placeholder="••••••••"
-                    className="h-12 w-full rounded-[4px] border border-[#c2c6d3] bg-transparent pl-11 pr-4 text-[16px] leading-6 text-[#0b1c30] outline-none transition-all placeholder:text-[#737783] focus:border-[#00346f] focus:ring-2 focus:ring-[#00346f]"
+                    minLength={minPasswordLength}
+                    aria-invalid={passwordTouched && !passwordIsValid}
+                    className="h-12 w-full rounded-[4px] border border-[#c2c6d3] bg-[#F8FAFC] pl-11 pr-4 text-[16px] leading-6 text-[#0b1c30] outline-none transition-all placeholder:text-[#737783] focus:border-[#004A8D] focus:ring-2 focus:ring-[#004A8D]"
                     required
                   />
                 </div>
+                {passwordTouched && !passwordIsValid && (
+                  <p className="text-xs font-medium text-red-700">A senha deve ter ao menos {minPasswordLength} caracteres.</p>
+                )}
               </div>
 
               <button
                 type="submit"
-                disabled={authLoading || submitting}
+                disabled={!canSubmit}
                 className="group flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#00346f] px-4 text-[14px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_12px_30px_-18px_rgba(0,52,111,0.9)] transition duration-200 ease-out hover:bg-[#094a99] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <span>{authLoading ? "Carregando..." : submitting ? "Entrando..." : "Entrar"}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">
-                  <path d="M10 17 15 12 10 7" />
-                  <path d="M15 12H3" />
-                </svg>
+                {authLoading || submitting ? (
+                  <>
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true" />
+                    <span>Entrando...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Entrar</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">
+                      <path d="M10 17 15 12 10 7" />
+                      <path d="M15 12H3" />
+                    </svg>
+                  </>
+                )}
               </button>
             </form>
 
