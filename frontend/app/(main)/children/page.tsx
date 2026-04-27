@@ -112,6 +112,62 @@ export default function ChildrenPage() {
     return child.saude !== null && child.educacao !== null && child.assistencia_social !== null;
   };
 
+  const handleExportCSV = async () => {
+    try {
+      setToast({ message: "Gerando CSV, aguarde...", type: "success" });
+      
+      const params = new URLSearchParams();
+      params.set("page", "1");
+      params.set("pageSize", "10000"); // Busca até 10 mil registros para o CSV
+      if (debouncedFilters.q) params.set("q", debouncedFilters.q);
+      if (debouncedFilters.bairro) params.set("bairro", debouncedFilters.bairro);
+      if (debouncedFilters.revisado === "true") params.set("revisado", "true");
+      if (debouncedFilters.revisado === "false") params.set("revisado", "false");
+      if (debouncedFilters.incompleto === "true") params.set("incompleto", "true");
+
+      const data = await fetchWithAuth<ChildrenResponse>(`/children?${params.toString()}`, {
+        method: "GET"
+      });
+
+      const allChildren = data.items ?? [];
+
+      if (allChildren.length === 0) {
+        setToast({ message: "Nenhum dado para exportar.", type: "error" });
+        return;
+      }
+      
+      const headers = ["ID", "Nome", "Bairro", "Idade", "Revisado", "Incompleto", "Alerta"];
+      const rows = allChildren.map(child => [
+        child.id,
+        `"${child.nome}"`, // Aspas para evitar quebra caso o nome tenha vírgulas
+        `"${child.bairro}"`,
+        getIdade(child.data_nascimento),
+        child.revisado_em ? "Sim" : "Não",
+        isComplete(child) ? "Não" : "Sim",
+        hasAlerts(child) ? "Sim" : "Não"
+      ]);
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(e => e.join(","))
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `criancas_${new Date().toISOString().split("T")[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setToast({ message: "Download iniciado!", type: "success" });
+    } catch (error) {
+      console.error("Erro ao exportar CSV:", error);
+      setToast({ message: "Erro ao exportar CSV.", type: "error" });
+    }
+  };
+
   return (
     <div className="animate-in fade-in duration-500">
       <nav className="mb-4 flex text-sm text-[#525F6A]" aria-label="Breadcrumb">
@@ -131,11 +187,20 @@ export default function ChildrenPage() {
         </ol>
       </nav>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#00346f] dark:text-blue-400 sm:text-4xl">Crianças</h1>
-        <p className="mt-2 max-w-2xl text-[#525F6A] dark:text-slate-400">
-          Gestão e acompanhamento das metas de saúde, educação e assistência social.
-        </p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[#00346f] dark:text-blue-400 sm:text-4xl">Crianças</h1>
+          <p className="mt-2 max-w-2xl text-[#525F6A] dark:text-slate-400">
+            Gestão e acompanhamento das metas de saúde, educação e assistência social.
+          </p>
+        </div>
+        <button
+          onClick={handleExportCSV}
+          className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+        >
+          <Icon name="download" className="mr-2 h-4 w-4" />
+          Exportar CSV
+        </button>
       </div>
 
       <div className="mb-6 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
