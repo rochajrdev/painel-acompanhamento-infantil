@@ -50,6 +50,10 @@ export class ChildrenService {
     }
     return childrenRepository.getInteractions(childId);
   }
+
+  async listBairros() {
+    return childrenRepository.findAllBairros();
+  }
 }
 
 export const childrenService = new ChildrenService();

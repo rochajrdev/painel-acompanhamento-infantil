@@ -37,10 +37,28 @@ export default function ChildrenPage() {
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [bairros, setBairros] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const [filters, setFilters] = useState({ q: "", bairro: "", revisado: "", incompleto: "" });
   const debouncedFilters = useDebounce(filters, 500);
+
+  useEffect(() => {
+    if (authLoading || isExpired || !isAuthenticated) return;
+
+    const fetchBairros = async () => {
+      try {
+        const data = await fetchWithAuth<string[]>("/children/bairros", {
+          method: "GET"
+        });
+        setBairros(data);
+      } catch (error) {
+        console.error("Erro ao carregar bairros:", error);
+      }
+    };
+
+    fetchBairros();
+  }, [authLoading, isAuthenticated, isExpired, fetchWithAuth]);
 
   useEffect(() => {
     if (authLoading || isExpired || !isAuthenticated) return;
@@ -219,15 +237,18 @@ export default function ChildrenPage() {
           </div>
           <div className="flex-1 space-y-1">
             <label htmlFor="bairro" className="text-xs font-semibold uppercase text-slate-500">Bairro</label>
-            <input
-              type="text"
+            <select
               id="bairro"
               name="bairro"
-              placeholder="Filtrar por bairro"
               value={filters.bairro}
               onChange={handleFilterChange}
-              className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#004A8D] dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-[#004A8D] dark:focus:ring-blue-500"
-            />
+              className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-[#004A8D] dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-[#004A8D] dark:focus:ring-blue-500"
+            >
+              <option value="">Todos os bairros</option>
+              {bairros.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
           </div>
           <div className="flex-1 space-y-1">
             <label htmlFor="revisado" className="text-xs font-semibold uppercase text-slate-500">Revisão</label>

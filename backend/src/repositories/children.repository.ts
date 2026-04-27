@@ -595,6 +595,14 @@ export class ChildrenRepository {
       }
     };
   }
+
+  async findAllBairros(): Promise<string[]> {
+    const result = await pool.query<{ bairro: string }>(
+      "SELECT DISTINCT bairro FROM children WHERE bairro IS NOT NULL ORDER BY bairro ASC"
+    );
+
+    return result.rows.map(row => row.bairro);
+  }
 }
 
 export const childrenRepository = new ChildrenRepository();

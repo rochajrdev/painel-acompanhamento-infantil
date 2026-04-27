@@ -59,3 +59,7 @@ export async function exportRiskMapPdfController() {
 export async function exportExcelController() {
   return excelService.generateVaccineReport();
 }
+
+export async function listBairrosController() {
+  return childrenService.listBairros();
+}

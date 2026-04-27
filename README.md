@@ -22,6 +22,17 @@ O projeto foi inteiramente dockerizado para subir sem qualquer configuração ad
 
 ---
 
+## 🌍 Deploy e Acesso Público
+
+A aplicação está disponível online para avaliação imediata:
+
+- **Frontend (Vercel):** [https://painel-acompanhamento-infantil.vercel.app/](https://painel-acompanhamento-infantil.vercel.app/)
+- **Backend (Render):** Infraestrutura escalável em Node.js.
+- **Banco de Dados (Supabase):** Escolhido pela robustez do PostgreSQL gerenciado e pela facilidade de monitoramento, garantindo alta disponibilidade e performance para a aplicação em produção.
+
+
+---
+
 ## 🔑 Credenciais de Teste
 
 Para acessar o painel, utilize os seguintes dados (já presentes no banco local):
@@ -65,6 +76,7 @@ Fiz questão de cumprir todos os requisitos listados como "diferenciais", além 
 ✔️ **Visualização de Dados (Heatmap e Gráficos):** O dashboard é robusto, mostrando Cards de Resumo, Barras de Progressão Animadas e um sistema que categoriza recorrências de alertas e bairros com mais anomalias.
 ✔️ **Prontuário Social e Memória Institucional:** Fui além do simples `PATCH /review` (status booleano). Implementei um sistema de registro onde o técnico insere o relato do acompanhamento, criando uma linha do tempo histórica para cada criança, garantindo a continuidade do cuidado na assistência social.
 ✔️ **Módulo de Relatórios (Bônus):** Construí uma central de relatórios que exporta o Mapa de Risco em PDF (via Puppeteer e Chart.js) e planilhas dinâmicas no formato Excel (via ExcelJS) com formatação condicional automática para alertas de vacinas!
+✔️ **Deploy em Produção:** Projeto totalmente publicado e configurado em ambiente Cloud (Vercel + Render + Supabase).
 
 ---
 
@@ -104,6 +116,6 @@ npm run test:e2e
 
 ## 🔮 O que faria diferente com mais tempo?
 
-1. **Deploy CI/CD e Vercel:** Automatizaria o build de produção via GitHub Actions rodando os testes (Vitest + Playwright) antes de liberar um novo Release e integraria o banco a uma instância PaaS (Neon/Supabase), hospedando o front na Vercel e o back no Render.
-2. **Refresh Tokens (Backend):** Atualmente, a sessão é gerenciada por um JWT único. Para uma plataforma crítica, implementar `refresh_tokens` rotativos baseados em HttpOnly cookies ofereceria melhor experiência e segurança contra sequestros de sessão prolongados.
-3. **Mapa Interativo Real (Leaflet):** O Dashboard calcula os bairros com alertas e há o PDF de risco por bairro, mas com tempo eu implementaria um mapa interativo usando `react-leaflet` plotando *clusters* nas coordenadas dos bairros mais afetados para visualização geoespacial (as bibliotecas de Leaflet inclusive já foram inseridas no `package.json` para isso!).
+1. **Refresh Tokens (Backend):** Atualmente, a sessão é gerenciada por um JWT único. Para uma plataforma crítica, implementar `refresh_tokens` rotativos baseados em HttpOnly cookies ofereceria melhor experiência e segurança contra sequestros de sessão prolongados.
+2. **Mapa Interativo Real (Leaflet):** O Dashboard calcula os bairros com alertas e há o PDF de risco por bairro, mas com tempo eu implementaria um mapa interativo usando `react-leaflet` plotando *clusters* nas coordenadas dos bairros mais afetados para visualização geoespacial (as bibliotecas de Leaflet inclusive já foram inseridas no `package.json` para isso!).
+3. Mais modelos de relatórios gerados.

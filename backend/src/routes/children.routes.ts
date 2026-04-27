@@ -4,6 +4,7 @@ import {
   getChildController,
   getSummaryController,
   listChildrenController,
+  listBairrosController,
   reviewChildController,
   createInteractionController,
   getInteractionsController,
@@ -28,6 +29,11 @@ export async function childrenRoutes(app: FastifyInstance) {
   app.get("/heatmap/alerts", async (request, reply) => {
     const heatmap = await getAlertsHeatmapController();
     return reply.send(heatmap);
+  });
+
+  app.get("/children/bairros", async (request, reply) => {
+    const bairros = await listBairrosController();
+    return reply.send(bairros);
   });
 
   app.get("/children", async (request, reply) => {
