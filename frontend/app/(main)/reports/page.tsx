@@ -166,7 +166,7 @@ export default function ReportsPage() {
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Acompanhamento de Vacinas (Excel)</h2>
           <p className="mt-2 flex-grow text-sm text-slate-600 dark:text-slate-400">
-            Planilha dinâmica com todas as crianças cadastradas. Inclui formatação condicional que destaca automaticamente em vermelho os casos com "vacina atrasada" no campo de saúde.
+            Planilha dinâmica com todas as crianças cadastradas. Inclui formatação condicional que destaca automaticamente em vermelho os casos com &quot;vacina atrasada&quot; no campo de saúde.
           </p>
           <button
             onClick={handleGenerateExcel}
