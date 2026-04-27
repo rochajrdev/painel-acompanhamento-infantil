@@ -1,5 +1,13 @@
 FROM node:20-alpine AS dev
 
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    font-noto-emoji
+
 WORKDIR /app/backend
 
 COPY backend/package*.json ./
@@ -15,6 +23,14 @@ FROM dev AS builder
 RUN npm run build
 
 FROM node:20-alpine AS runner
+
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    font-noto-emoji
 
 WORKDIR /app/backend
 

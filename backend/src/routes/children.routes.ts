@@ -6,7 +6,10 @@ import {
   listChildrenController,
   reviewChildController,
   createInteractionController,
-  getInteractionsController
+  getInteractionsController,
+  exportPdfController,
+  exportRiskMapPdfController,
+  exportExcelController
 } from "../controllers/children.controller.js";
 import { emitHeatmapUpdate } from "../realtime/socket.js";
 import { AppError } from "../errors/appError.js";
@@ -42,6 +45,27 @@ export async function childrenRoutes(app: FastifyInstance) {
     );
 
     return reply.send(result);
+  });
+
+  app.get("/children/export/pdf", async (request, reply) => {
+    const pdfBuffer = await exportPdfController();
+    reply.header('Content-Type', 'application/pdf');
+    reply.header('Content-Disposition', 'attachment; filename="relatorio_executivo.pdf"');
+    return reply.send(pdfBuffer);
+  });
+
+  app.get("/children/export/pdf-risk-map", async (request, reply) => {
+    const pdfBuffer = await exportRiskMapPdfController();
+    reply.header('Content-Type', 'application/pdf');
+    reply.header('Content-Disposition', 'attachment; filename="mapa_risco_bairro.pdf"');
+    return reply.send(pdfBuffer);
+  });
+
+  app.get("/children/export/excel", async (request, reply) => {
+    const excelBuffer = await exportExcelController();
+    reply.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    reply.header('Content-Disposition', 'attachment; filename="relatorio_vacinas.xlsx"');
+    return reply.send(excelBuffer);
   });
 
   app.get("/children/:id", async (request, reply) => {

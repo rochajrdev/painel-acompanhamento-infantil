@@ -147,7 +147,7 @@ export default function ChildDetailPage() {
           <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{title}</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">Nenhum dado registrado para esta área.</p>
           <span className="mt-3 inline-block rounded bg-orange-100 dark:bg-orange-900/30 px-2.5 py-0.5 text-xs font-medium text-orange-800 dark:text-orange-400">
-            Ação Requerida
+            Ação Necessária
           </span>
         </div>
       );

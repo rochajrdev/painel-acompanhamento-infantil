@@ -28,5 +28,10 @@ export async function apiFetch<T>(
     throw new Error(errorMessage);
   }
 
+  const contentType = response.headers.get("content-type");
+  if (contentType && (contentType.includes("application/pdf") || contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))) {
+    return response.blob() as Promise<any>;
+  }
+
   return response.json() as Promise<T>;
 }

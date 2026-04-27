@@ -52,6 +52,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   const isDashboardActive = pathname === "/dashboard";
   const isChildrenActive = pathname?.startsWith("/children");
+  const isReportsActive = pathname?.startsWith("/reports");
 
   return (
     <div className={`${publicSans.className} min-h-screen bg-[#f9f9ff] dark:bg-slate-900 text-[#191c21] dark:text-slate-100 antialiased transition-colors duration-300`}>
@@ -137,6 +138,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <Icon name="children" className="h-3.5 w-3.5" />
             </span>
             Crianças
+          </Link>
+          <Link
+            href="/reports"
+            className={`flex items-center gap-3 px-6 py-4 font-semibold transition-colors ${
+              isReportsActive
+                ? "border-r-4 border-[#004A8D] dark:border-blue-500 bg-white dark:bg-slate-800 text-[#004A8D] dark:text-blue-400"
+                : "text-[#525F6A] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#004A8D] dark:hover:text-blue-300"
+            }`}
+          >
+            <span className={`inline-flex h-6 w-6 items-center justify-center rounded text-xs ${
+              isReportsActive ? "bg-blue-100 dark:bg-blue-900/50" : "bg-slate-200 dark:bg-slate-800"
+            }`}>
+              <Icon name="document" className="h-3.5 w-3.5" />
+            </span>
+            Relatórios
           </Link>
         </nav>
       </aside>

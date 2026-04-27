@@ -5,6 +5,8 @@ import type {
 } from "../schemas/children.schema.js";
 import { childrenService } from "../services/children.service.js";
 import { summaryService } from "../services/summary.service.js";
+import { pdfService } from "../services/pdf.service.js";
+import { excelService } from "../services/excel.service.js";
 
 export async function getSummaryController() {
   return summaryService.getSummary();
@@ -44,4 +46,16 @@ export async function createInteractionController(
 
 export async function getInteractionsController(params: ChildParamsInput) {
   return childrenService.getInteractions(params.id);
+}
+
+export async function exportPdfController() {
+  return pdfService.generateExecutiveReport();
+}
+
+export async function exportRiskMapPdfController() {
+  return pdfService.generateRiskMapReport();
+}
+
+export async function exportExcelController() {
+  return excelService.generateVaccineReport();
 }
