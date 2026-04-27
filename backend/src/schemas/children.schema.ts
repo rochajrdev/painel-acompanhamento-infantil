@@ -46,3 +46,15 @@ export const childInteractionBodySchema = z.object({
 });
 
 export type ChildInteractionBodyInput = z.infer<typeof childInteractionBodySchema>;
+
+export const updateChildBodySchema = z.object({
+  nome: z.string().trim().min(1).optional(),
+  data_nascimento: z.string().trim().min(1).optional(),
+  bairro: z.string().trim().min(1).optional(),
+  responsavel: z.string().trim().min(1).optional(),
+  saude: z.record(z.any()).nullable().optional(),
+  educacao: z.record(z.any()).nullable().optional(),
+  assistencia_social: z.record(z.any()).nullable().optional()
+});
+
+export type UpdateChildBodyInput = z.infer<typeof updateChildBodySchema>;

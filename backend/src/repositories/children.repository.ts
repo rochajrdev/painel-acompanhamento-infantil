@@ -596,6 +596,51 @@ export class ChildrenRepository {
     };
   }
 
+  async update(id: string, data: Partial<ChildRecord>): Promise<ChildRecord | null> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let index = 1;
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        if (["saude", "educacao", "assistencia_social"].includes(key)) {
+          fields.push(`${key} = $${index}::jsonb`);
+          values.push(value ? JSON.stringify(value) : null);
+        } else {
+          fields.push(`${key} = $${index}`);
+          values.push(value);
+        }
+        index++;
+      }
+    }
+
+    if (fields.length === 0) return this.findById(id);
+
+    fields.push(`updated_at = now()`);
+    values.push(id);
+
+    const query = `
+      UPDATE children
+      SET ${fields.join(", ")}
+      WHERE id = $${index}
+      RETURNING
+        id,
+        nome,
+        data_nascimento::text AS data_nascimento,
+        bairro,
+        responsavel,
+        saude,
+        educacao,
+        assistencia_social,
+        revisado,
+        revisado_por,
+        revisado_em::text AS revisado_em
+    `;
+
+    const result = await pool.query<ChildRow>(query, values);
+    return result.rows[0] ? mapRow(result.rows[0]) : null;
+  }
+
   async findAllBairros(): Promise<string[]> {
     const result = await pool.query<{ bairro: string }>(
       "SELECT DISTINCT bairro FROM children WHERE bairro IS NOT NULL ORDER BY bairro ASC"

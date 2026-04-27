@@ -57,8 +57,10 @@ O **Next.js** foi a escolha natural para garantir suporte a Server Components, f
 - **UX, Animações e Performance:**
   - **Responsividade Extrema (375px a 1440px):** A interface foi construída com abordagem Mobile-First. Telas complexas, como o Dashboard e a Tabela de Crianças, colapsam de forma elegante em telas pequenas (ex: transformando tabelas em listas de cards em resoluções < 768px), garantindo o uso confortável pelo técnico em campo.
   - O **Layout Persistente** evita *flickerings* ou saltos de carregamento no header/sidebar durante a navegação.
-  - Implementação de um `useDebounce` genérico para a barra de busca não martelar a API a cada tecla pressionada.
   - Animações fluídas ao carregar as porcentagens (barras progredindo suavemente) proporcionam um visual engajador.
+  - **Filtro de Bairros Inteligente:** Substituí o input de texto por um dropdown dinâmico carregado do banco. *Por que?* Evita erros de digitação e é muito mais ágil no celular (tecnologia pensada para o técnico que usa o app com uma mão só em campo).
+  - **Skeleton Screens (Placeholders Animados):** Implementados em todas as telas de carregamento. *Por que?* Elimina o "salto" de layout e passa uma percepção de velocidade e profissionalismo superior ao simples "Carregando...".
+  - **Edição Híbrida (Global e Contextual):** O técnico agora pode atualizar dados diretamente. *Por que?* Dados de vulnerabilidade mudam rápido (criança trocou de escola ou endereço). Adicionei botões de "Preencher Dados" diretamente nos cards vazios para guiar o técnico ao erro exato, além de um botão de "Editar" geral para revisões completas.
 
 ### 3. Tratamento de Casos-Limite e Dados Incompletos
 No contexto de Vulnerabilidade Social, a inconsistência é a regra.
@@ -75,6 +77,7 @@ Fiz questão de cumprir todos os requisitos listados como "diferenciais", além 
 ✔️ **Testes:** Foram escritos testes unitários no Backend (com `vitest`) validando as regras de negócio dos Services e testes unitários de React Hooks (`useDebounce`) no frontend. Playwright configurado via *package.json* para fluxos E2E.  
 ✔️ **Visualização de Dados (Heatmap e Gráficos):** O dashboard é robusto, mostrando Cards de Resumo, Barras de Progressão Animadas e um sistema que categoriza recorrências de alertas e bairros com mais anomalias.
 ✔️ **Prontuário Social e Memória Institucional:** Fui além do simples `PATCH /review` (status booleano). Implementei um sistema de registro onde o técnico insere o relato do acompanhamento, criando uma linha do tempo histórica para cada criança, garantindo a continuidade do cuidado na assistência social.
+✔️ **Edição de Dados em Tempo Real:** Além de visualizar, o sistema permite que o técnico atue sobre a base de dados, corrigindo ou preenchendo lacunas de informação diretamente do campo, com validação instantânea.
 ✔️ **Módulo de Relatórios (Bônus):** Construí uma central de relatórios que exporta o Mapa de Risco em PDF (via Puppeteer e Chart.js) e planilhas dinâmicas no formato Excel (via ExcelJS) com formatação condicional automática para alertas de vacinas!
 ✔️ **Deploy em Produção:** Projeto totalmente publicado e configurado em ambiente Cloud (Vercel + Render + Supabase).
 

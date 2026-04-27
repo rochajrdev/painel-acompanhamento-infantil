@@ -10,14 +10,16 @@ import {
   getInteractionsController,
   exportPdfController,
   exportRiskMapPdfController,
-  exportExcelController
+  exportExcelController,
+  updateChildController
 } from "../controllers/children.controller.js";
 import { emitHeatmapUpdate } from "../realtime/socket.js";
 import { AppError } from "../errors/appError.js";
 import {
   childParamsSchema,
   childrenQuerySchema,
-  childInteractionBodySchema
+  childInteractionBodySchema,
+  updateChildBodySchema
 } from "../schemas/children.schema.js";
 
 export async function childrenRoutes(app: FastifyInstance) {
@@ -85,6 +87,26 @@ export async function childrenRoutes(app: FastifyInstance) {
 
     return reply.send(child);
   });
+
+  app.patch(
+    "/children/:id",
+    { preHandler: [app.authenticate] },
+    async (request, reply) => {
+      const paramsResult = childParamsSchema.safeParse(request.params);
+      const bodyResult = updateChildBodySchema.safeParse(request.body);
+
+      if (!paramsResult.success || !bodyResult.success) {
+        throw new AppError("Parâmetros ou corpo da requisição inválidos", 400);
+      }
+
+      const updatedChild = await updateChildController(paramsResult.data, bodyResult.data);
+      
+      const heatmap = await getAlertsHeatmapController();
+      emitHeatmapUpdate(heatmap);
+
+      return reply.send(updatedChild);
+    }
+  );
 
   app.patch(
     "/children/:id/review",

@@ -1,7 +1,8 @@
 import type {
   ChildParamsInput,
   ChildrenQueryInput,
-  ChildInteractionBodyInput
+  ChildInteractionBodyInput,
+  UpdateChildBodyInput
 } from "../schemas/children.schema.js";
 import { childrenService } from "../services/children.service.js";
 import { summaryService } from "../services/summary.service.js";
@@ -62,4 +63,8 @@ export async function exportExcelController() {
 
 export async function listBairrosController() {
   return childrenService.listBairros();
+}
+
+export async function updateChildController(params: ChildParamsInput, body: UpdateChildBodyInput) {
+  return childrenService.update(params.id, body);
 }

@@ -9,6 +9,8 @@ import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import { Toast } from "@/components/Toast";
 import { RegisterInteractionModal } from "@/components/RegisterInteractionModal";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { EditChildModal } from "@/components/EditChildModal";
+import { Icon } from "@/components/Icon";
 
 interface ChildInteraction {
   id: string;
@@ -40,6 +42,8 @@ export default function ChildDetailPage() {
   const [loading, setLoading] = useState(true);
   const [reviewing, setReviewing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [activeEditTab, setActiveEditTab] = useState<'geral' | 'saude' | 'educacao' | 'assistencia'>('geral');
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const id = params.id as string;
@@ -122,6 +126,25 @@ export default function ChildDetailPage() {
     }
   };
 
+  const handleUpdateChild = async (data: Partial<ChildDetail>) => {
+    if (!child) return;
+    setReviewing(true);
+    try {
+      const updated = await fetchWithAuth<ChildDetail>(`/children/${child.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data)
+      });
+      setChild(updated);
+      setToast({ message: "Cadastro atualizado com sucesso!", type: "success" });
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error("Erro ao atualizar cadastro:", error);
+      setToast({ message: "Erro ao atualizar cadastro.", type: "error" });
+    } finally {
+      setReviewing(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -174,15 +197,22 @@ export default function ChildDetailPage() {
     );
   }
 
-  const renderDetails = (data: Record<string, any> | null, title: string) => {
+  const renderDetails = (data: Record<string, any> | null, title: string, tabId: 'saude' | 'educacao' | 'assistencia') => {
     if (!data) {
       return (
-        <div className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-6 text-center shadow-sm">
+        <div className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-6 text-center shadow-sm flex flex-col items-center justify-center min-h-[180px]">
           <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{title}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Nenhum dado registrado para esta área.</p>
-          <span className="mt-3 inline-block rounded bg-orange-100 dark:bg-orange-900/30 px-2.5 py-0.5 text-xs font-medium text-orange-800 dark:text-orange-400">
-            Ação Necessária
-          </span>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 px-4">Nenhum dado registrado para esta área.</p>
+          <button 
+            onClick={() => {
+              setActiveEditTab(tabId);
+              setIsEditModalOpen(true);
+            }}
+            className="inline-flex items-center rounded bg-orange-100 dark:bg-orange-900/30 px-3 py-1.5 text-xs font-bold text-orange-800 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-800/50 transition-colors"
+          >
+            <Icon name="dashboard" className="mr-1.5 h-3 w-3" />
+            Preencher Dados
+          </button>
         </div>
       );
     }
@@ -218,14 +248,25 @@ export default function ChildDetailPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl py-8 animate-in fade-in duration-500">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#00346f] dark:text-blue-400">{child.nome}</h1>
-        <Link
-          href="/children"
-          className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 shadow-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
-        >
-          Voltar
-        </Link>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold text-[#00346f] dark:text-blue-400 truncate">{child.nome}</h1>
+        <div className="flex gap-2 shrink-0">
+          <button
+            onClick={() => {
+              setActiveEditTab('geral');
+              setIsEditModalOpen(true);
+            }}
+            className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 shadow-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+          >
+            Editar
+          </button>
+          <Link
+            href="/children"
+            className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 shadow-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+          >
+            Voltar
+          </Link>
+        </div>
       </div>
 
       <div className="mb-6 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
@@ -256,9 +297,9 @@ export default function ChildDetailPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">
-        {renderDetails(child.saude, "Saúde")}
-        {renderDetails(child.educacao, "Educação")}
-        {renderDetails(child.assistencia_social, "Assistência")}
+        {renderDetails(child.saude, "Saúde", "saude")}
+        {renderDetails(child.educacao, "Educação", "educacao")}
+        {renderDetails(child.assistencia_social, "Assistência", "assistencia")}
       </div>
 
       {!child.revisado_em && (
@@ -316,6 +357,15 @@ export default function ChildDetailPage() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddInteraction}
         isSubmitting={reviewing}
+      />
+
+      <EditChildModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleUpdateChild}
+        isSubmitting={reviewing}
+        initialData={child as any}
+        initialTab={activeEditTab}
       />
 
       {toast && <Toast message={toast.message} type={toast.type} />}

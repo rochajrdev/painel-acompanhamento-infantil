@@ -51,6 +51,14 @@ export class ChildrenService {
     return childrenRepository.getInteractions(childId);
   }
 
+  async update(id: string, data: any) {
+    const updatedChild = await childrenRepository.update(id, data);
+    if (!updatedChild) {
+      throw new AppError("Criança não encontrada", 404);
+    }
+    return updatedChild;
+  }
+
   async listBairros() {
     return childrenRepository.findAllBairros();
   }
