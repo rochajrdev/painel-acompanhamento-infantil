@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import type { HeatmapPoint } from "@/components/AlertHeatmapCard";
 import { Icon, type IconName } from "@/components/Icon";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
 
@@ -205,14 +206,39 @@ export default function DashboardPage() {
     };
   }, [authLoading, isAuthenticated, isExpired]);
 
+
   if (authLoading || loading) {
     return (
-      <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-4">
-        <div className="h-36 animate-pulse rounded-lg bg-slate-200" />
-        <div className="h-36 animate-pulse rounded-lg bg-slate-200" />
-        <div className="h-36 animate-pulse rounded-lg bg-slate-200" />
-        <div className="h-36 animate-pulse rounded-lg bg-slate-200" />
-      </div>
+      <>
+        <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Skeleton className="h-10 w-48 mb-2" />
+            <Skeleton className="h-5 w-full max-w-2xl" />
+          </div>
+          <Skeleton className="h-12 w-32" />
+        </div>
+
+        <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-5">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+
+        <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+
+        <div className="mb-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <Skeleton className="h-80 w-full" />
+          <Skeleton className="h-80 w-full" />
+        </div>
+
+        <Skeleton className="h-[400px] w-full" />
+      </>
     );
   }
 

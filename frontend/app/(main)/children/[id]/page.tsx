@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import { Toast } from "@/components/Toast";
 import { RegisterInteractionModal } from "@/components/RegisterInteractionModal";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface ChildInteraction {
   id: string;
@@ -121,10 +122,43 @@ export default function ChildDetailPage() {
     }
   };
 
+
   if (loading) {
     return (
-      <div className="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-2xl flex-col items-center justify-center px-4">
-        <p className="text-slate-500 dark:text-slate-400">Carregando...</p>
+      <div className="mx-auto w-full max-w-2xl py-8 animate-in fade-in duration-500">
+        <div className="mb-6 flex items-center justify-between">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+
+        <div className="mb-6 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <div className="grid gap-4 md:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i}>
+                <Skeleton className="h-4 w-16 mb-2" />
+                <Skeleton className="h-7 w-32" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
+        </div>
+
+        <Skeleton className="h-12 w-full mb-8" />
+
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+            <Skeleton className="h-6 w-48" />
+          </div>
+          <div className="p-6 space-y-6">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        </div>
       </div>
     );
   }

@@ -8,6 +8,7 @@ import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Toast } from "@/components/Toast";
 import { Icon } from "@/components/Icon";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface Child {
   id: string;
@@ -302,15 +303,19 @@ export default function ChildrenPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse bg-white dark:bg-slate-900">
-                    <td className="px-6 py-4"><div className="h-4 w-48 rounded bg-slate-200 dark:bg-slate-800"></div><div className="mt-2 h-3 w-24 rounded bg-slate-100 dark:bg-slate-800/50"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-800"></div></td>
-                    <td className="px-6 py-4"><div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-800"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800"></div></td>
-                    <td className="px-6 py-4 text-right"><div className="ml-auto h-8 w-24 rounded bg-slate-200 dark:bg-slate-800"></div></td>
+                  <tr key={i} className="bg-white dark:bg-slate-900">
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-48 mb-2" />
+                      <Skeleton className="h-3 w-24" />
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="ml-auto h-8 w-24" /></td>
                   </tr>
                 ))
               ) : children.length === 0 ? (
