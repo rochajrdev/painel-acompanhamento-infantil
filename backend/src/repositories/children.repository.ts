@@ -24,6 +24,9 @@ export interface PaginatedChildrenResult {
 }
 
 export interface HeatmapChildRow {
+  id: string;
+  nome: string;
+  data_nascimento: string;
   bairro: string;
   saude: ChildRecord["saude"];
   educacao: ChildRecord["educacao"];
@@ -416,6 +419,9 @@ export class ChildrenRepository {
     const result = await pool.query<HeatmapChildRow>(
       `
         SELECT
+          id,
+          nome,
+          data_nascimento::text as data_nascimento,
           bairro,
           saude,
           educacao,
