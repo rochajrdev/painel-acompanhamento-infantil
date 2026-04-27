@@ -61,6 +61,7 @@ Fiz questão de cumprir todos os requisitos listados como "diferenciais", além 
 ✔️ **Dark Mode:** Suporte a modo noturno (com transição suave de cores `transition-colors duration-300`), controlado pelo usuário através de um botão no cabeçalho ou seguindo as preferências do SO (via `next-themes`).  
 ✔️ **Testes:** Foram escritos testes unitários no Backend (com `vitest`) validando as regras de negócio dos Services e testes unitários de React Hooks (`useDebounce`) no frontend. Playwright configurado via *package.json* para fluxos E2E.  
 ✔️ **Visualização de Dados (Heatmap e Gráficos):** O dashboard é robusto, mostrando Cards de Resumo, Barras de Progressão Animadas e um sistema que categoriza recorrências de alertas e bairros com mais anomalias.
+✔️ **Módulo de Relatórios (Bônus):** Construí uma central de relatórios que exporta o Mapa de Risco em PDF (via Puppeteer e Chart.js) e planilhas dinâmicas no formato Excel (via ExcelJS) com formatação condicional automática para alertas de vacinas!
 
 ---
 
@@ -68,7 +69,6 @@ Fiz questão de cumprir todos os requisitos listados como "diferenciais", além 
 
 1. **Deploy CI/CD e Vercel:** Automatizaria o build de produção via GitHub Actions rodando os testes (Vitest + Playwright) antes de liberar um novo Release e integraria o banco a uma instância PaaS (Neon/Supabase), hospedando o front na Vercel e o back no Render.
 2. **Refresh Tokens (Backend):** Atualmente, a sessão é gerenciada por um JWT único. Para uma plataforma crítica, implementar `refresh_tokens` rotativos baseados em HttpOnly cookies ofereceria melhor experiência e segurança contra sequestros de sessão prolongados.
-3. **Módulo de Relatórios:** Adicionar exportação dos dados da tabela em formato `.csv` ou `.xlsx` para os técnicos usarem offline.
-4. **Mapa Interativo Real (Leaflet):** O Dashboard calcula os bairros com alertas, mas com tempo eu implementaria um mapa usando `react-leaflet` plotando *clusters* nas coordenadas dos bairros mais afetados para visualização geoespacial (as bibliotecas de Leaflet inclusive já foram inseridas no `package.json` para isso!).
+3. **Mapa Interativo Real (Leaflet):** O Dashboard calcula os bairros com alertas e há o PDF de risco por bairro, mas com tempo eu implementaria um mapa interativo usando `react-leaflet` plotando *clusters* nas coordenadas dos bairros mais afetados para visualização geoespacial (as bibliotecas de Leaflet inclusive já foram inseridas no `package.json` para isso!).
 
 Muito obrigado pela oportunidade! Estou à disposição para explorar o código.
