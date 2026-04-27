@@ -28,6 +28,7 @@ interface Summary {
   criancas_com_alertas: number;
   alertas_totais: number;
   total_alertas: number;
+  criancas_incompletas: number;
   alertas_por_area: Record<string, { alertas: number; criancas: number }>;
 }
 
@@ -219,6 +220,7 @@ export default function DashboardPage() {
   const totalReviewed = summary?.total_revisadas ?? 0;
   const childrenWithAlerts = summary?.criancas_com_alertas ?? 0;
   const totalAlerts = summary?.total_alertas ?? summary?.alertas_totais ?? 0;
+  const incompleteChildren = summary?.criancas_incompletas ?? 0;
   const areaEntries = Object.entries(summary?.alertas_por_area ?? {});
 
   return (
@@ -296,16 +298,16 @@ export default function DashboardPage() {
             <span className="text-[11px] font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400">Dados Incompletos</span>
           </div>
           <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
-            {totalChildren > 0 ? Math.round(((totalChildren - (summary.criancas_incompletas || 0)) / totalChildren) * 100) : 0}%
+            {totalChildren > 0 ? Math.round(((totalChildren - incompleteChildren) / totalChildren) * 100) : 0}%
           </div>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#E2E8F0] dark:bg-slate-800">
             <div
               className="h-full rounded-full bg-orange-500 transition-all duration-1000 ease-out"
-              style={{ width: animateBars ? `${totalChildren > 0 ? Math.round(((totalChildren - (summary.criancas_incompletas || 0)) / totalChildren) * 100) : 0}%` : "0%" }}
+              style={{ width: animateBars ? `${totalChildren > 0 ? Math.round(((totalChildren - incompleteChildren) / totalChildren) * 100) : 0}%` : "0%" }}
             />
           </div>
           <div className="mt-1 text-xs font-semibold text-[#2D3748] dark:text-slate-400">
-            {(summary.criancas_incompletas || 0)} cadastros incompletos
+            {incompleteChildren} cadastros incompletos
           </div>
         </div>
       </div>
