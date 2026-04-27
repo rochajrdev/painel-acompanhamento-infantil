@@ -1,4 +1,4 @@
-import type { ChildRecord } from "../types/child.types.js";
+import type { ChildRecord, ChildInteraction } from "../types/child.types.js";
 import { pool } from "../db/database.js";
 
 type ChildRow = ChildRecord;
@@ -330,6 +330,86 @@ export class ChildrenRepository {
     } finally {
       client.release();
     }
+  }
+
+  async addInteraction(
+    childId: string,
+    technicianName: string,
+    content: string,
+    interactionDate: string
+  ): Promise<ChildInteraction | null> {
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const checkResult = await client.query(
+        "SELECT id FROM children WHERE id = $1",
+        [childId]
+      );
+
+      if (checkResult.rows.length === 0) {
+        await client.query("ROLLBACK");
+        return null;
+      }
+
+      const interactionResult = await client.query<ChildInteraction>(
+        `
+          INSERT INTO child_interactions (child_id, technician_name, content, interaction_date)
+          VALUES ($1, $2, $3, $4)
+          RETURNING
+            id,
+            child_id,
+            technician_name,
+            content,
+            interaction_date::text AS interaction_date,
+            created_at::text AS created_at
+        `,
+        [childId, technicianName, content, interactionDate]
+      );
+
+      await client.query(
+        `
+          UPDATE children
+          SET
+            revisado = true,
+            revisado_por = $2,
+            revisado_em = now(),
+            updated_at = now()
+          WHERE id = $1
+        `,
+        [childId, technicianName]
+      );
+
+      await client.query("COMMIT");
+
+      return interactionResult.rows[0] ?? null;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getInteractions(childId: string): Promise<ChildInteraction[]> {
+    const result = await pool.query<ChildInteraction>(
+      `
+        SELECT
+          id,
+          child_id,
+          technician_name,
+          content,
+          interaction_date::text AS interaction_date,
+          created_at::text AS created_at
+        FROM child_interactions
+        WHERE child_id = $1
+        ORDER BY interaction_date DESC, created_at DESC
+      `,
+      [childId]
+    );
+
+    return result.rows;
   }
 
   async findForHeatmap(): Promise<HeatmapChildRow[]> {

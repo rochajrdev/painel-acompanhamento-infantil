@@ -34,6 +34,22 @@ export class ChildrenService {
   async getAlertsHeatmap() {
     return heatmapService.getAlertsHeatmap();
   }
+
+  async addInteraction(childId: string, technicianName: string, content: string, interactionDate: string) {
+    const interaction = await childrenRepository.addInteraction(childId, technicianName, content, interactionDate);
+    if (!interaction) {
+      throw new AppError("Criança não encontrada", 404);
+    }
+    return interaction;
+  }
+
+  async getInteractions(childId: string) {
+    const child = await childrenRepository.findById(childId);
+    if (!child) {
+      throw new AppError("Criança não encontrada", 404);
+    }
+    return childrenRepository.getInteractions(childId);
+  }
 }
 
 export const childrenService = new ChildrenService();

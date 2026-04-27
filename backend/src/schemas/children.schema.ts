@@ -39,3 +39,10 @@ export const childrenQuerySchema = z.object({
 
 export type ChildParamsInput = z.infer<typeof childParamsSchema>;
 export type ChildrenQueryInput = z.infer<typeof childrenQuerySchema>;
+
+export const childInteractionBodySchema = z.object({
+  content: z.string().trim().min(1, "O relato não pode ser vazio"),
+  interaction_date: z.string().trim().min(1, "A data da interação é obrigatória")
+});
+
+export type ChildInteractionBodyInput = z.infer<typeof childInteractionBodySchema>;

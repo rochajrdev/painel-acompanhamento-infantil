@@ -42,4 +42,18 @@ export const childReviewsTableSql = `
   CREATE INDEX IF NOT EXISTS child_reviews_child_id_idx ON child_reviews (child_id);
 `;
 
-export const databaseSchemaSql = `${childrenTableSql}\n${techniciansTableSql}\n${childReviewsTableSql}`;
+export const childInteractionsTableSql = `
+  CREATE TABLE IF NOT EXISTS child_interactions (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    child_id text NOT NULL REFERENCES children (id) ON DELETE CASCADE,
+    technician_name text NOT NULL,
+    content text NOT NULL,
+    interaction_date date NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+  );
+
+  CREATE INDEX IF NOT EXISTS child_interactions_child_id_idx ON child_interactions (child_id);
+  CREATE INDEX IF NOT EXISTS child_interactions_date_idx ON child_interactions (interaction_date DESC);
+`;
+
+export const databaseSchemaSql = `${childrenTableSql}\n${techniciansTableSql}\n${childReviewsTableSql}\n${childInteractionsTableSql}`;

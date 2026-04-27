@@ -7,6 +7,16 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import { Toast } from "@/components/Toast";
+import { RegisterInteractionModal } from "@/components/RegisterInteractionModal";
+
+interface ChildInteraction {
+  id: string;
+  child_id: string;
+  technician_name: string;
+  content: string;
+  interaction_date: string;
+  created_at: string;
+}
 
 interface ChildDetail {
   id: string;
@@ -25,8 +35,10 @@ export default function ChildDetailPage() {
   const { isAuthenticated, isLoading: authLoading, isExpired } = useAuth();
   const fetchWithAuth = useAuthenticatedFetch();
   const [child, setChild] = useState<ChildDetail | null>(null);
+  const [interactions, setInteractions] = useState<ChildInteraction[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewing, setReviewing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const id = params.id as string;
@@ -63,6 +75,12 @@ export default function ChildDetailPage() {
           method: "GET"
         });
         setChild(data);
+
+        // Fetch interactions history
+        const interactionsData = await fetchWithAuth<ChildInteraction[]>(`/children/${id}/interactions`, {
+          method: "GET"
+        });
+        setInteractions(interactionsData);
       } catch (error) {
         console.error("Erro ao carregar criança:", error);
         const message = error instanceof Error ? error.message : "Erro ao carregar criança";
@@ -75,19 +93,28 @@ export default function ChildDetailPage() {
     fetchChild();
   }, [authLoading, isAuthenticated, isExpired, id, fetchWithAuth, router]);
 
-  const handleReview = async () => {
+  const handleAddInteraction = async (content: string, interactionDate: string) => {
     if (!child) return;
 
     setReviewing(true);
     try {
-      await fetchWithAuth(`/children/${child.id}/review`, {
-        method: "PATCH"
+      const newInteraction = await fetchWithAuth<ChildInteraction>(`/children/${child.id}/interactions`, {
+        method: "POST",
+        body: JSON.stringify({
+          content,
+          interaction_date: interactionDate
+        })
       });
-      setToast({ message: "Criança revisada com sucesso!", type: "success" });
+
+      setToast({ message: "Acompanhamento registrado com sucesso!", type: "success" });
+      
+      // Update local state
+      setInteractions(prev => [newInteraction, ...prev]);
       setChild(prev => prev ? { ...prev, revisado_em: new Date().toISOString() } : null);
+      setIsModalOpen(false);
     } catch (error) {
-      console.error("Erro ao revisar criança:", error);
-      const message = error instanceof Error ? error.message : "Erro ao revisar criança";
+      console.error("Erro ao registrar acompanhamento:", error);
+      const message = error instanceof Error ? error.message : "Erro ao registrar acompanhamento";
       setToast({ message, type: "error" });
     } finally {
       setReviewing(false);
@@ -194,23 +221,68 @@ export default function ChildDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
         {renderDetails(child.saude, "Saúde")}
         {renderDetails(child.educacao, "Educação")}
         {renderDetails(child.assistencia_social, "Assistência")}
       </div>
 
       {!child.revisado_em && (
-        <div className="mt-6">
+        <div className="mt-6 mb-8">
           <button
-            onClick={handleReview}
-            disabled={reviewing}
-            className="w-full rounded-lg bg-[#004A8D] dark:bg-blue-600 px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-[#00346f] dark:hover:bg-blue-700 disabled:opacity-50"
+            onClick={() => setIsModalOpen(true)}
+            className="w-full rounded-lg bg-[#004A8D] dark:bg-blue-600 px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-[#00346f] dark:hover:bg-blue-700"
           >
-            {reviewing ? "Revisando..." : "Marcar como Revisado"}
+            Marcar como Revisado
           </button>
         </div>
       )}
+
+      <div className="mt-8 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-6 py-4 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Prontuário Social</h2>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="rounded-lg bg-[#004A8D] dark:bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#00346f] dark:hover:bg-blue-700"
+          >
+            Registrar Acompanhamento
+          </button>
+        </div>
+        
+        <div className="p-6">
+          {interactions.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Nenhum acompanhamento registrado para esta criança.</p>
+            </div>
+          ) : (
+            <div className="relative border-l-2 border-slate-200 dark:border-slate-700 ml-3 space-y-8">
+              {interactions.map((interaction) => (
+                <div key={interaction.id} className="relative pl-6">
+                  <div className="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-2 border-white bg-blue-500 dark:border-slate-900 dark:bg-blue-400" />
+                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 mb-1">
+                    <span className="font-semibold text-slate-900 dark:text-slate-100">
+                      Técnico {interaction.technician_name}
+                    </span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {new Date(interaction.interaction_date + 'T12:00:00Z').toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 whitespace-pre-wrap">
+                    {interaction.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <RegisterInteractionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddInteraction}
+        isSubmitting={reviewing}
+      />
 
       {toast && <Toast message={toast.message} type={toast.type} />}
     </div>

@@ -29,3 +29,12 @@ export interface ChildRecord {
   revisado_por: string | null;
   revisado_em: string | null;
 }
+
+export interface ChildInteraction {
+  id: string;
+  child_id: string;
+  technician_name: string;
+  content: string;
+  interaction_date: string;
+  created_at: string;
+}

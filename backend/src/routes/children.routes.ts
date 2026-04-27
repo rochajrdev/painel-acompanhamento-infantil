@@ -4,13 +4,16 @@ import {
   getChildController,
   getSummaryController,
   listChildrenController,
-  reviewChildController
+  reviewChildController,
+  createInteractionController,
+  getInteractionsController
 } from "../controllers/children.controller.js";
 import { emitHeatmapUpdate } from "../realtime/socket.js";
 import { AppError } from "../errors/appError.js";
 import {
   childParamsSchema,
-  childrenQuerySchema
+  childrenQuerySchema,
+  childInteractionBodySchema
 } from "../schemas/children.schema.js";
 
 export async function childrenRoutes(app: FastifyInstance) {
@@ -71,6 +74,44 @@ export async function childrenRoutes(app: FastifyInstance) {
       emitHeatmapUpdate(heatmap);
 
       return reply.send(updatedChild);
+    }
+  );
+
+  app.get("/children/:id/interactions", async (request, reply) => {
+    const paramsResult = childParamsSchema.safeParse(request.params);
+
+    if (!paramsResult.success) {
+      throw new AppError("Parâmetros inválidos", 400);
+    }
+
+    const interactions = await getInteractionsController(paramsResult.data);
+
+    return reply.send(interactions);
+  });
+
+  app.post(
+    "/children/:id/interactions",
+    { preHandler: [app.authenticate] },
+    async (request, reply) => {
+      const paramsResult = childParamsSchema.safeParse(request.params);
+      const bodyResult = childInteractionBodySchema.safeParse(request.body);
+
+      if (!paramsResult.success || !bodyResult.success) {
+        throw new AppError("Parâmetros ou corpo da requisição inválidos", 400);
+      }
+
+      const reviewer = request.user.preferred_username;
+
+      const interaction = await createInteractionController(
+        paramsResult.data,
+        bodyResult.data,
+        reviewer
+      );
+
+      const heatmap = await getAlertsHeatmapController();
+      emitHeatmapUpdate(heatmap);
+
+      return reply.status(201).send(interaction);
     }
   );
 }
