@@ -357,6 +357,7 @@ export class ChildrenRepository {
     criancas_educacao: number;
     criancas_assistencia: number;
     criancas_com_alertas: number;
+    criancas_incompletas: number;
     alertas_totais: number;
     total_alertas: number;
     alertas_por_area: Record<string, {alertas: number; criancas: number}>;
@@ -371,6 +372,7 @@ export class ChildrenRepository {
       criancas_educacao: string;
       criancas_assistencia: string;
       criancas_com_alertas: string;
+      criancas_incompletas: string;
       total_alertas: string;
       alertas_totais: string;
     }>(
@@ -426,6 +428,9 @@ export class ChildrenRepository {
               AND jsonb_array_length(assistencia_social -> 'alertas') > 0
             )
           )::text AS criancas_com_alertas,
+          COUNT(*) FILTER (
+            WHERE saude IS NULL OR educacao IS NULL OR assistencia_social IS NULL
+          )::text AS criancas_incompletas,
           (
             COALESCE(SUM(CASE
               WHEN saude IS NOT NULL
@@ -485,6 +490,7 @@ export class ChildrenRepository {
       criancas_educacao,
       criancas_assistencia,
       criancas_com_alertas: Number(row?.criancas_com_alertas ?? 0),
+      criancas_incompletas: Number(row?.criancas_incompletas ?? 0),
       alertas_totais: Number(row?.alertas_totais ?? 0),
       total_alertas: Number(row?.total_alertas ?? 0),
       alertas_por_area: {

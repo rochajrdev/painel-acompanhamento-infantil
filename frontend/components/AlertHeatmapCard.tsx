@@ -103,27 +103,6 @@ export function AlertHeatmapCard({ points, updatedAt, sidebarOpen }: AlertHeatma
       return;
     }
 
-    const heatData: Array<[number, number, number]> = points.map((point) => [
-      point.lat,
-      point.lng,
-      Math.max(0.2, point.peso / maxWeight)
-    ]);
-
-    const heatLayer = (L as typeof L & HeatLayerFactory).heatLayer(heatData, {
-      radius: 30,
-      blur: 18,
-      minOpacity: 0.35,
-      gradient: {
-        0.25: "#93c5fd",
-        0.5: "#f59e0b",
-        0.75: "#f97316",
-        1: "#C53030"
-      }
-    });
-
-    heatLayer.addTo(map);
-    heatLayerRef.current = heatLayer;
-
     const markerLayer = L.layerGroup();
 
     for (const point of points) {
@@ -132,17 +111,44 @@ export function AlertHeatmapCard({ points, updatedAt, sidebarOpen }: AlertHeatma
         .map((item) => `${item.quantidade} ${formatAlertName(item.tipo)}`)
         .join("<br/>");
 
-      L.circleMarker([point.lat, point.lng], {
-        radius: 10 + point.peso,
-        color: "#004A8D",
-        fillColor: "#004A8D",
-        fillOpacity: 0.12,
-        weight: 1
+      const intensity = point.peso / maxWeight;
+      
+      // Cores baseadas na intensidade de alertas do bairro
+      const baseColor = intensity > 0.75 ? "#C53030" : 
+                        intensity > 0.5 ? "#f97316" : 
+                        intensity > 0.25 ? "#f59e0b" : "#3b82f6";
+      
+      // O raio geográfico base é 600 metros + 100 metros por cada alerta ativo
+      const geoRadius = 600 + (point.peso * 100);
+
+      // Camada externa (mais difusa)
+      L.circle([point.lat, point.lng], {
+        radius: geoRadius,
+        stroke: false,
+        fillColor: baseColor,
+        fillOpacity: 0.15
+      }).addTo(markerLayer);
+
+      // Camada intermediária
+      L.circle([point.lat, point.lng], {
+        radius: geoRadius * 0.6,
+        stroke: false,
+        fillColor: baseColor,
+        fillOpacity: 0.3
+      }).addTo(markerLayer);
+
+      // Núcleo do bairro (com borda e popup)
+      L.circle([point.lat, point.lng], {
+        radius: geoRadius * 0.3,
+        color: baseColor,
+        weight: 1,
+        fillColor: baseColor,
+        fillOpacity: 0.7
       })
-        .bindPopup(
-          `<strong>${point.bairro}</strong><br/>${point.peso} alertas ativos<br/>${details || "Sem detalhamento"}`
-        )
-        .addTo(markerLayer);
+      .bindPopup(
+        `<strong>${point.bairro}</strong><br/>${point.peso} alertas ativos no bairro<br/>${details || "Sem detalhamento"}`
+      )
+      .addTo(markerLayer);
     }
 
     markerLayer.addTo(map);
@@ -162,17 +168,20 @@ export function AlertHeatmapCard({ points, updatedAt, sidebarOpen }: AlertHeatma
   }, [sidebarOpen]);
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-[#F8F9FA] p-6 shadow-sm">
+    <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-bold text-[#2D3748]">Mapa de Calor de Alertas</h3>
-        <span className="text-xs font-medium text-[#525F6A]">Atualizado: {formatUpdatedAt(updatedAt)}</span>
+        <h3 className="font-bold text-[#2D3748] dark:text-slate-200">Mapa de Calor de Alertas</h3>
+        <span className="text-xs font-medium text-[#525F6A] dark:text-slate-400">Atualizado: {formatUpdatedAt(updatedAt)}</span>
       </div>
-      <p className="mb-4 text-sm text-[#525F6A]">
-        Intensidade maior indica concentracao de alertas ativos por bairro. Clique nos pontos para ver o tipo de alerta.
+      <p className="mb-4 text-sm text-[#525F6A] dark:text-slate-400">
+        Intensidade maior indica concentração de alertas ativos por bairro. Clique nos pontos para ver o tipo de alerta.
       </p>
-      <div ref={mapContainerRef} className="h-[360px] w-full overflow-hidden rounded-lg border border-slate-200" />
+      <div 
+        ref={mapContainerRef} 
+        className="h-[360px] w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 dark:[&_.leaflet-tile-pane]:invert dark:[&_.leaflet-tile-pane]:hue-rotate-180 dark:[&_.leaflet-tile-pane]:contrast-100" 
+      />
       {points.length === 0 && (
-        <p className="mt-3 text-sm text-[#525F6A]">Ainda nao ha pontos com alertas para exibir no mapa.</p>
+        <p className="mt-3 text-sm text-[#525F6A] dark:text-slate-400">Ainda não há pontos com alertas para exibir no mapa.</p>
       )}
     </section>
   );

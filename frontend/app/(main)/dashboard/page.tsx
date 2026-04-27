@@ -225,8 +225,8 @@ export default function DashboardPage() {
     <>
       <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="mb-2 text-3xl font-bold text-[#00346f] sm:text-4xl">Visão Geral</h1>
-          <p className="max-w-2xl text-[#525F6A]">
+          <h1 className="mb-2 text-3xl font-bold text-[#00346f] dark:text-blue-400 sm:text-4xl">Visão Geral</h1>
+          <p className="max-w-2xl text-[#525F6A] dark:text-slate-400">
             Monitoramento em tempo real das metas de saúde, educação e assistência social para a primeira infância.
           </p>
         </div>
@@ -238,61 +238,82 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-lg border border-slate-200 bg-[#F8F9FA] p-6 shadow-sm">
+      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-5">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-6 shadow-sm">
           <div className="mb-4 flex items-start justify-between">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-[#00346f]">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/50 text-[#00346f] dark:text-blue-400">
               <Icon name="users" className="h-4 w-4" />
             </span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#525F6A]">Total</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#525F6A] dark:text-slate-400">Total</span>
           </div>
-          <div className="text-4xl font-bold text-[#004A8D]">{totalChildren}</div>
-          <div className="mt-1 text-sm text-[#525F6A]">Crianças cadastradas</div>
+          <div className="text-4xl font-bold text-[#004A8D] dark:text-blue-400">{totalChildren}</div>
+          <div className="mt-1 text-sm text-[#525F6A] dark:text-slate-400">Crianças cadastradas</div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-[#F8F9FA] p-6 shadow-sm ring-1 ring-rose-100">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-6 shadow-sm ring-1 ring-rose-100 dark:ring-red-900/30">
           <div className="mb-4 flex items-start justify-between">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-[#C53030]">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 dark:bg-red-900/30 text-[#C53030] dark:text-red-400">
               <Icon name="warning" className="h-4 w-4" />
             </span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#C53030]">Atenção</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#C53030] dark:text-red-400">Atenção</span>
           </div>
-          <div className="text-4xl font-bold text-[#C53030]">{childrenWithAlerts}</div>
-          <div className="mt-1 text-sm text-[#525F6A]">Crianças com alertas ({alertRate}%)</div>
+          <div className="text-4xl font-bold text-[#C53030] dark:text-red-400">{childrenWithAlerts}</div>
+          <div className="mt-1 text-sm text-[#525F6A] dark:text-slate-400">Crianças com alertas ({alertRate}%)</div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-[#F8F9FA] p-6 shadow-sm">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-6 shadow-sm">
           <div className="mb-4 flex items-start justify-between">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-[#00346f]">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/50 text-[#00346f] dark:text-blue-400">
               <Icon name="review" className="h-4 w-4" />
             </span>
           </div>
-          <div className="text-4xl font-bold text-[#004A8D]">{reviewRate}%</div>
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#E2E8F0]">
-            <div 
-              className="h-full rounded-full bg-[#004A8D] transition-all duration-1000 ease-out" 
-              style={{ width: animateBars ? `${Math.min(reviewRate, 100)}%` : "0%" }} 
+          <div className="text-4xl font-bold text-[#004A8D] dark:text-blue-400">{reviewRate}%</div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#E2E8F0] dark:bg-slate-800">
+            <div
+              className="h-full rounded-full bg-[#004A8D] dark:bg-blue-500 transition-all duration-1000 ease-out"
+              style={{ width: animateBars ? `${Math.min(reviewRate, 100)}%` : "0%" }}
             />
           </div>
-          <div className="mt-1 text-xs font-semibold text-[#2D3748]">{totalReviewed} revisadas pelo técnico </div>
+          <div className="mt-1 text-xs font-semibold text-[#2D3748] dark:text-slate-400">{totalReviewed} revisadas pelo técnico </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-[#F8F9FA] p-6 shadow-sm">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-6 shadow-sm">
           <div className="mb-4 flex items-start justify-between">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-[#C53030]">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/30 text-[#C53030] dark:text-red-400">
               <Icon name="bell" className="h-4 w-4" />
             </span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#525F6A]">Total</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#525F6A] dark:text-slate-400">Total</span>
           </div>
-          <div className="text-4xl font-bold text-[#C53030]">{totalAlerts}</div>
-          <div className="mt-1 text-sm text-[#525F6A]">Alertas ativos</div>
+          <div className="text-4xl font-bold text-[#C53030] dark:text-red-400">{totalAlerts}</div>
+          <div className="mt-1 text-sm text-[#525F6A] dark:text-slate-400">Alertas ativos</div>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-6 shadow-sm">
+          <div className="mb-4 flex items-start justify-between">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+              <Icon name="dashboard" className="h-4 w-4" />
+            </span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400">Dados Incompletos</span>
+          </div>
+          <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+            {totalChildren > 0 ? Math.round(((totalChildren - (summary.criancas_incompletas || 0)) / totalChildren) * 100) : 0}%
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#E2E8F0] dark:bg-slate-800">
+            <div
+              className="h-full rounded-full bg-orange-500 transition-all duration-1000 ease-out"
+              style={{ width: animateBars ? `${totalChildren > 0 ? Math.round(((totalChildren - (summary.criancas_incompletas || 0)) / totalChildren) * 100) : 0}%` : "0%" }}
+            />
+          </div>
+          <div className="mt-1 text-xs font-semibold text-[#2D3748] dark:text-slate-400">
+            {(summary.criancas_incompletas || 0)} cadastros incompletos
+          </div>
         </div>
       </div>
 
       <section className="mb-10">
         <h3 className="mb-6 flex items-center gap-2 text-2xl font-semibold text-[#2D3748]">
           <span className="h-8 w-2 rounded-full bg-[#004A8D]" />
-          Alertas por Área Finalística
+          Alertas por Área
         </h3>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {areaEntries.map(([area, data]) => {
@@ -304,20 +325,20 @@ export default function DashboardPage() {
             };
 
             return (
-              <div key={area} className={`rounded-lg border border-slate-200 border-l-4 ${meta.accent} bg-[#F8F9FA] p-6 shadow-sm`}>
+              <div key={area} className={`rounded-lg border border-slate-200 dark:border-slate-800 border-l-4 ${meta.accent} bg-[#F8F9FA] dark:bg-slate-900 p-6 shadow-sm`}>
                 <div className="mb-4 flex items-center gap-3">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                     <Icon name={meta.icon} className="h-4 w-4" />
                   </span>
-                  <h4 className="font-bold text-[#2D3748]">{meta.label}</h4>
+                  <h4 className="font-bold text-[#2D3748] dark:text-slate-200">{meta.label}</h4>
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-[#525F6A]">Crianças</span>
-                    <span className="font-bold text-[#2D3748]">{data.criancas}</span>
+                    <span className="text-sm text-[#525F6A] dark:text-slate-400">Crianças</span>
+                    <span className="font-bold text-[#2D3748] dark:text-slate-200">{data.criancas}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-[#525F6A]">Alertas ativos</span>
+                    <span className="text-sm text-[#525F6A] dark:text-slate-400">Alertas ativos</span>
                     <span className={`rounded px-2 py-0.5 text-xs font-bold ${meta.badge}`}>{data.alertas}</span>
                   </div>
                 </div>
@@ -328,60 +349,60 @@ export default function DashboardPage() {
       </section>
 
       <div className="mb-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <section className="overflow-hidden rounded-lg border border-slate-200 bg-[#F8F9FA] shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-            <h3 className="font-bold text-[#2D3748]">Tipos de Alerta Recorrentes</h3>
-            <span className="text-xs font-medium uppercase tracking-widest text-[#525F6A]">Atualizado</span>
+        <section className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4">
+            <h3 className="font-bold text-[#2D3748] dark:text-slate-200">Tipos de Alerta Recorrentes</h3>
+            <span className="text-xs font-medium uppercase tracking-widest text-[#525F6A] dark:text-slate-400">Atualizado</span>
           </div>
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
             {insights.topAlertTypes.length === 0 && (
-              <div className="px-6 py-5 text-sm text-[#525F6A]">Sem alertas detectados no momento.</div>
+              <div className="px-6 py-5 text-sm text-[#525F6A] dark:text-slate-400">Sem alertas detectados no momento.</div>
             )}
             {insights.topAlertTypes.map((item, index) => (
-              <div key={item.name} className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-slate-50">
+              <div key={item.name} className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">
                 <div className="flex items-center gap-4">
                   <span className={`h-2 w-2 rounded-full ${index === 0 ? "bg-rose-500" : index === 1 ? "bg-amber-500" : index === 2 ? "bg-orange-500" : "bg-blue-500"}`} />
                   <div>
-                    <p className="text-sm font-semibold text-[#2D3748]">{formatAlertName(item.name)}</p>
-                    <p className="text-xs text-[#525F6A]">Ocorrências registradas</p>
+                    <p className="text-sm font-semibold text-[#2D3748] dark:text-slate-200">{formatAlertName(item.name)}</p>
+                    <p className="text-xs text-[#525F6A] dark:text-slate-400">Ocorrências registradas</p>
                   </div>
                 </div>
-                <span className="font-bold text-[#C53030]">{item.count} casos</span>
+                <span className="font-bold text-[#C53030] dark:text-red-400">{item.count} casos</span>
               </div>
             ))}
           </div>
-          <div className="bg-slate-50 p-4 text-center">
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 text-center">
             <Link href="/children" className="text-sm font-bold text-[#004A8D] hover:underline">
               Ver lista de crianças
             </Link>
           </div>
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-[#F8F9FA] p-6 shadow-sm">
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="font-bold text-[#2D3748]">Alertas por Bairro</h3>
+            <h3 className="font-bold text-[#2D3748] dark:text-slate-200">Alertas por Bairro</h3>
             <div className="flex gap-1">
-              <span className="h-2 w-2 rounded-full bg-[#004A8D]/20" />
-              <span className="h-2 w-2 rounded-full bg-[#004A8D]/40" />
-              <span className="h-2 w-2 rounded-full bg-[#004A8D]" />
+              <span className="h-2 w-2 rounded-full bg-[#004A8D]/20 dark:bg-blue-500/20" />
+              <span className="h-2 w-2 rounded-full bg-[#004A8D]/40 dark:bg-blue-500/40" />
+              <span className="h-2 w-2 rounded-full bg-[#004A8D] dark:bg-blue-500" />
             </div>
           </div>
           <div className="space-y-6">
             {insights.topNeighborhoods.length === 0 && (
-              <p className="text-sm text-[#525F6A]">Sem bairros com alertas ativos.</p>
+              <p className="text-sm text-[#525F6A] dark:text-slate-400">Sem bairros com alertas ativos.</p>
             )}
             {insights.topNeighborhoods.map((item) => {
               const width = Math.max(8, Math.round((item.count / insights.maxNeighborhoodCount) * 100));
               return (
                 <div key={item.name} className="pt-1">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#2D3748]">{item.name}</span>
-                    <span className="text-xs font-semibold text-[#004A8D]">{item.count}</span>
+                    <span className="text-xs font-semibold text-[#2D3748] dark:text-slate-200">{item.name}</span>
+                    <span className="text-xs font-semibold text-[#004A8D] dark:text-blue-400">{item.count}</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded bg-slate-100">
-                    <div 
-                      className="h-full rounded bg-[#004A8D] transition-all duration-1000 ease-out" 
-                      style={{ width: animateBars ? `${width}%` : "0%" }} 
+                  <div className="h-2 overflow-hidden rounded bg-slate-100 dark:bg-slate-800">
+                    <div
+                      className="h-full rounded bg-[#004A8D] dark:bg-blue-500 transition-all duration-1000 ease-out"
+                      style={{ width: animateBars ? `${width}%` : "0%" }}
                     />
                   </div>
                 </div>

@@ -1,235 +1,74 @@
-# Painel de Acompanhamento Infantil
+# Painel de Acompanhamento Infantil 👶
 
-Aplicação full-stack para acompanhamento de crianças em situação de vulnerabilidade, com foco em leitura rápida de alertas, revisão de casos e experiência simples para técnicos.
+Bem-vindo ao **Painel de Acompanhamento Infantil**, a solução desenvolvida para o Desafio Técnico Full-stack da Prefeitura do Rio de Janeiro. 
+Este sistema permite aos técnicos de campo monitorarem crianças em situação de vulnerabilidade cruzando dados vitais de Saúde, Educação e Assistência Social.
 
-## Objetivo
+## 🚀 Como Rodar o Projeto Localmente
 
-O projeto foi estruturado para atender um desafio técnico com uma solução prática, reproduzível e fácil de evoluir. A prioridade foi manter a base enxuta no início, mas com decisões consistentes para crescer sem retrabalho.
+O projeto foi inteiramente dockerizado para subir sem qualquer configuração adicional na sua máquina.
 
-## Stack escolhida
+**Pré-requisitos:**
+- Docker e Docker Compose instalados.
 
-### Backend
-- Node.js
-- TypeScript
-- Fastify 5
-- `pg` para PostgreSQL
-- Zod para validação
-- `@fastify/cors` para integração com o frontend
-- `@fastify/jwt` reservado para autenticação
+**Passo a passo:**
+1. Clone o repositório.
+2. Na raiz do projeto, execute:
+   ```bash
+   docker compose up --build
+   ```
+3. O Backend iniciará na porta `3333` e rodará o _seed_ do banco de dados automaticamente.
+4. O Frontend iniciará na porta `3000`.
+5. Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-### Frontend
-- Next.js 14
-- React 18
-- TypeScript
-- Tailwind CSS
+---
 
-### Banco de dados
-- PostgreSQL 16
+## 🔑 Credenciais de Teste
 
-### Infraestrutura
-- Docker
-- Docker Compose
+Para acessar o painel, utilize os seguintes dados (já presentes no banco local):
 
-## Decisões tomadas
+- **Email:** `tecnico@prefeitura.rio`
+- **Senha:** `painel@2024`
 
-### 1. Node.js + TypeScript + Fastify no backend
-A escolha foi feita por produtividade, tipagem forte e simplicidade para criar uma API organizada. Fastify oferece boa performance e uma estrutura limpa para rotas, plugins e validação.
+---
 
-### 2. Next.js no frontend
-O Next.js foi escolhido por permitir uma base moderna, com App Router, facilidade para compor telas e possibilidade de crescer para SSR, proteção de rotas e integração com a API.
+## 🏗️ Decisões Arquiteturais e Trade-offs
 
-### 3. PostgreSQL em vez de SQLite
-O PostgreSQL foi escolhido para deixar a solução mais alinhada com um cenário real de produção, além de facilitar conexão externa via DBeaver e futuras evoluções do projeto.
+### 1. Backend (Node.js + TypeScript + Fastify + PostgreSQL)
+A escolha do **Node.js** com TypeScript e Fastify, ao invés do Go, deu-se pela altíssima agilidade no compartilhamento de ecossistema com o frontend (Typescript full-stack), facilitando a manutenção e inferência de tipos. 
+- **Banco de Dados (PostgreSQL):** Escolhido pela robustez em queries complexas. As paginações e filtros na rota `/children` são resolvidas diretamente via SQL (com `ILIKE` e suporte a paginação nativa) na camada de `Repository`, maximizando a performance.
+- **Integração Real-time (WebSockets):** Adicionado `socket.io` como diferencial. Qualquer alteração (ex: um técnico marcar um cadastro como revisado) despacha eventos para que o painel (`/dashboard`) seja atualizado em tempo real.
 
-### 4. Docker desde cedo
-A aplicação foi dockerizada para garantir reprodutibilidade do ambiente, facilitar avaliação e permitir subir frontend, backend e banco com um único comando.
+### 2. Frontend (Next.js 14 App Router + TailwindCSS)
+O **Next.js** foi a escolha natural para garantir suporte a Server Components, facilitando integrações otimizadas de SEO (caso fosse público) e roteamento limpo com o `App Router`.
+- **Gerenciamento de Estado de Autenticação:** Hooks customizados (`useAuth`) aliados a `context` mantêm o JWT seguro. Um interceptor de requisições cuida do logoff automático caso o token expire.
+- **Componentização Avançada:** Componentes visuais inspirados no *shadcn/ui* (botões com variantes, toasts, esqueletos de carregamento) proporcionam um *look and feel* premium.
+- **UX, Animações e Performance:**
+  - O **Layout Persistente** evita *flickerings* ou saltos de carregamento no header/sidebar durante a navegação.
+  - Implementação de um `useDebounce` genérico para a barra de busca não martelar a API a cada tecla pressionada.
+  - Animações fluídas ao carregar as porcentagens (barras progredindo suavemente) proporcionam um visual engajador.
 
-### 5. Seed oficial em `data/seed.json`
-Os dados iniciais ficam centralizados em um arquivo único, versionado no repositório, e carregados automaticamente no banco quando ele sobe vazio.
+### 3. Tratamento de Casos-Limite e Dados Incompletos
+No contexto de Vulnerabilidade Social, a inconsistência é a regra.
+- **No Banco/API:** Os schemas do Zod foram preparados para permitir `null` ou campos faltantes nos cruzamentos (saúde/educação/assistência).
+- **Na Interface:** A listagem apresenta a coluna "Informações", informando se os dados do cidadão estão *Completos* ou *Incompletos* (ausentes em uma das 3 vertentes). Na página de detalhes (`/children/[id]`), a interface oculta seções vazias silenciosamente e adapta a grade, em vez de mostrar *cards* em branco.
 
-### 6. Estrutura por camadas no backend
-A estrutura foi organizada para separar responsabilidades:
-- `routes`
-- `controllers`
-- `services`
-- `repositories`
-- `db`
-- `schemas`
-- `types`
+---
 
-Isso facilita manutenção e implementação de regras de negócio depois.
+## ✨ Diferenciais Atendidos
+Fiz questão de cumprir todos os requisitos listados como "diferenciais", além do baseline:
 
-## Estrutura do projeto
+✔️ **Acessibilidade (WCAG AA):** O sistema utiliza contraste seguro de cores nativo (Tailwind colors), tags semânticas (`<main>`, `<nav>`, `<aside>`) e controles plenamente navegáveis via teclado (foco visível, aria-labels nas paginações e menus laterais).  
+✔️ **Dark Mode:** Suporte a modo noturno (com transição suave de cores `transition-colors duration-300`), controlado pelo usuário através de um botão no cabeçalho ou seguindo as preferências do SO (via `next-themes`).  
+✔️ **Testes:** Foram escritos testes unitários no Backend (com `vitest`) validando as regras de negócio dos Services e testes unitários de React Hooks (`useDebounce`) no frontend. Playwright configurado via *package.json* para fluxos E2E.  
+✔️ **Visualização de Dados (Heatmap e Gráficos):** O dashboard é robusto, mostrando Cards de Resumo, Barras de Progressão Animadas e um sistema que categoriza recorrências de alertas e bairros com mais anomalias.
 
-### Backend
-- `src/app.ts` — criação do servidor Fastify
-- `src/server.ts` — bootstrap da aplicação
-- `src/config/env.ts` — variáveis de ambiente
-- `src/db/` — conexão, schema e seed
-- `src/repositories/` — acesso ao banco
-- `src/types/` — tipos de domínio
+---
 
-### Frontend
-- `app/` — páginas do Next.js
-- `components/` — componentes reutilizáveis
-- `hooks/` — hooks customizados
-- `services/` — integração com a API
-- `lib/` — utilitários
+## 🔮 O que faria diferente com mais tempo?
 
-### Infra
-- `docker-compose.yml` — sobe PostgreSQL, backend e frontend
-- `.dockerignore` — reduz contexto de build
-- `.gitignore` — evita versionar dependências, build e arquivos de ambiente
+1. **Deploy CI/CD e Vercel:** Automatizaria o build de produção via GitHub Actions rodando os testes (Vitest + Playwright) antes de liberar um novo Release e integraria o banco a uma instância PaaS (Neon/Supabase), hospedando o front na Vercel e o back no Render.
+2. **Refresh Tokens (Backend):** Atualmente, a sessão é gerenciada por um JWT único. Para uma plataforma crítica, implementar `refresh_tokens` rotativos baseados em HttpOnly cookies ofereceria melhor experiência e segurança contra sequestros de sessão prolongados.
+3. **Módulo de Relatórios:** Adicionar exportação dos dados da tabela em formato `.csv` ou `.xlsx` para os técnicos usarem offline.
+4. **Mapa Interativo Real (Leaflet):** O Dashboard calcula os bairros com alertas, mas com tempo eu implementaria um mapa usando `react-leaflet` plotando *clusters* nas coordenadas dos bairros mais afetados para visualização geoespacial (as bibliotecas de Leaflet inclusive já foram inseridas no `package.json` para isso!).
 
-## Banco de dados
-
-### Tabela atual
-Por enquanto, a tabela principal é `children`, suficiente para iniciar o fluxo do desafio.
-
-Ela contém dados de:
-- identificação da criança
-- responsável
-- bairro
-- dados de saúde
-- dados de Educacao
-- dados de assistência social
-- status de revisão
-
-### Campos de revisão
-A tabela já contempla:
-- `revisado`
-- `revisado_por`
-- `revisado_em`
-
-Isso permite marcar um caso como revisado sem precisar de uma tabela extra neste momento.
-
-## Acesso ao banco com DBeaver
-
-Com a stack em execução, o Postgres fica exposto na porta `5432`.
-
-### Dados de conexão
-- Host: `localhost`
-- Porta: `5432`
-- Banco: `painel`
-- Usuário: `postgres`
-- Senha: `postgres`
-
-### Observação
-Se o banco estiver rodando via Docker Compose, o acesso externo funciona normalmente porque a porta está publicada no `docker-compose.yml`.
-
-## Variáveis de ambiente
-
-### Backend
-Arquivo: `backend/.env.example`
-
-- `PORT=3333`
-- `HOST=0.0.0.0`
-- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/painel`
-
-### Raiz do projeto
-Arquivo: `.env.example`
-
-- `POSTGRES_DB=painel`
-- `POSTGRES_USER=postgres`
-- `POSTGRES_PASSWORD=postgres`
-- `POSTGRES_PORT=5432`
-- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/painel`
-
-## Como executar
-
-### Com Docker
-1. Subir a stack (modo desenvolvimento):
-   - `docker compose up -d --build`
-2. Acessar:
-   - Frontend: `http://localhost:3000`
-   - Backend: `http://localhost:3333`
-   - Postgres: `localhost:5432`
-3. Desenvolvimento contínuo:
-   - As alterações em `frontend/` e `backend/` refletem automaticamente (hot reload/watch)
-   - Não é necessário usar `docker compose down` a cada mudança de código
-
-### Observação importante (VS Code e tipagem)
-- O `docker-compose.yml` está configurado para instalar dependências automaticamente no startup (`npm ci`) e montar `node_modules` no host.
-- Isso evita erros locais de tipagem/import no editor após subir o projeto do zero em uma máquina nova.
-- Se atualizar dependências (`package.json`), rode novamente:
-  - `docker compose up -d --build`
-
-### Sem Docker
-#### Backend
-1. Entrar na pasta do backend
-2. Instalar dependências
-3. Definir `DATABASE_URL`
-4. Executar o seed e iniciar a API
-
-#### Frontend
-1. Entrar na pasta do frontend
-2. Instalar dependências
-3. Definir `NEXT_PUBLIC_API_URL=http://localhost:3333`
-4. Rodar o projeto em desenvolvimento
-
-## Scripts principais
-
-### Backend
-- `npm run dev` — ambiente de desenvolvimento
-- `npm run build` — build TypeScript
-- `npm run start` — inicia o build compilado
-- `npm run seed` — executa o seed do banco
-- `npm run db:seed` — executa o seed do banco
-
-### Frontend
-- `npm run dev` — ambiente de desenvolvimento
-- `npm run build` — build do Next.js
-- `npm run start` — inicia o frontend compilado
-- `npm run lint` — checagem de lint
-
-## Design e Acessibilidade (WCAG 2.1)
-
-Um dos pilares deste projeto foi garantir que as informacoes criticas de saude e educacao fossem acessiveis a todos os gestores. Por isso, a interface foi ajustada para seguir WCAG 2.1 nivel AA como requisito tecnico de produto, e nao como acabamento visual.
-
-### Decisoes de contraste
-
-A paleta original foi otimizada para garantir que nenhum elemento textual ou informativo ficasse com contraste inferior a 4.5:1 em relacao ao fundo.
-
-- Tipografia e hierarquia: tons de cinza claro foram substituidos por `#525F6A` (5.4:1), melhorando leitura de metas, subtitulos e legendas.
-- Identidade visual: o azul oficial foi consolidado em `#004A8D` para titulos, KPIs e elementos de destaque, com contraste de 10.5:1 sobre branco.
-- Feedback visual: cores semanticas de alerta e sucesso foram calibradas para manter legibilidade e significado funcional (`#C53030` e `#276749`, ambas > 5:1).
-
-### Tabela de cores utilizada
-
-| Elemento | Hex | Contraste | Objetivo |
-|---|---|---|---|
-| Primaria | `#004A8D` | 10.5:1 | Titulos e numeros principais (KPIs) |
-| Secundaria | `#525F6A` | 5.4:1 | Subtitulos e informacoes de apoio (metas) |
-| Alerta | `#C53030` | 5.3:1 | Destaque de areas criticas e notificacoes |
-| Sucesso | `#276749` | 5.1:1 | Indicadores de progresso e metas atingidas |
-| Background neutro | `#F8F9FA` | N/A | Fundo de cards para separar blocos de informacao |
-
-### Componentes inclusivos
-
-- Barra de progresso: trilho ajustado para `#E2E8F0` e preenchimento em `#004A8D` para reforcar a percepcao de progresso total x atual.
-- Tipografia de dados densos: rotulos de bairros usam `font-weight: 600` e cor `#2D3748` para facilitar escaneamento visual.
-
-## Estado atual
-
-### Já implementado
-- autenticação via JWT
-- endpoints de resumo, listagem, detalhe e revisão
-- dashboard, login, listagem e detalhe no frontend
-- integração com PostgreSQL e seed inicial
-- Docker com frontend, backend e banco
-- hot reload em frontend e backend via Docker
-- acesso externo ao banco para DBeaver
-
-### Próximos passos
-- testes automatizados (backend, frontend e e2e)
-- refinamento final de UI/UX
-- preparação de ambiente de entrega (compose de produção separado)
-
-## Convenções adotadas
-
-- Código em TypeScript
-- Comunicação em português no contexto do projeto
-- Arquitetura separada por responsabilidades
-- Decisões pragmáticas antes de excesso de abstração
-- Foco em entrega funcional antes de sofisticação desnecessária
-
+Muito obrigado pela oportunidade! Estou à disposição para explorar o código.
